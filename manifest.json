@@ -1,0 +1,15 @@
+{
+  "name": "Pulse",
+  "short_name": "Pulse",
+  "start_url": "/pulse-app/",
+  "display": "standalone",
+  "background_color": "#0D0B14",
+  "theme_color": "#0D0B14",
+  "icons": [
+    {
+      "src": "/pulse-app/logo.png",
+      "sizes": "448x444",
+      "type": "image/png"
+    }
+  ]
+}
