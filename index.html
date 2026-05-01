@@ -1,218 +1,570 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<link rel="manifest" href="/pulse-app/manifest.json">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<link rel="manifest" href="/pulse-app/manifest.json">
 <title>Pulse</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-  body { background:#0D0B14; color:#fff; font-family:sans-serif; max-width:430px; margin:0 auto; height:100dvh; display:flex; flex-direction:column; overflow:hidden; }
-  
-  .header { display:flex; align-items:center; gap:8px; padding:14px 16px; flex-shrink:0; }
-  .logo-box { background:#7C3AED; width:40px; height:40px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
-  .app-name { font-weight:900; font-size:18px; margin-right:6px; }
-  .dot { width:8px; height:8px; border-radius:50%; background:#22C55E; flex-shrink:0; }
-  .online { color:#22C55E; font-size:11px; font-weight:600; }
-  .gear-btn { margin-left:auto; background:none; border:none; color:#6B7280; font-size:22px; cursor:pointer; padding:4px; }
+:root{
+  --bg:#08060F;--bg2:#0F0C1A;
+  --surface:rgba(255,255,255,0.05);
+  --surface2:rgba(255,255,255,0.08);
+  --border:rgba(255,255,255,0.08);
+  --green:#22C55E;--green-dim:rgba(34,197,94,0.12);
+  --purple:#7C3AED;--purple-dim:rgba(124,58,237,0.18);
+  --white:#FFFFFF;--gray:rgba(255,255,255,0.4);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;}
+body{
+  background:var(--bg);color:var(--white);
+  font-family:'DM Sans',sans-serif;
+  max-width:430px;margin:0 auto;
+  height:100dvh;display:flex;flex-direction:column;
+  position:relative;overflow:hidden;
+}
+body::before{
+  content:'';position:fixed;top:-200px;left:-100px;
+  width:500px;height:500px;
+  background:radial-gradient(circle,rgba(124,58,237,0.12) 0%,transparent 70%);
+  pointer-events:none;z-index:0;
+  animation:float1 8s ease-in-out infinite;
+}
+body::after{
+  content:'';position:fixed;bottom:-150px;right:-80px;
+  width:400px;height:400px;
+  background:radial-gradient(circle,rgba(34,197,94,0.07) 0%,transparent 70%);
+  pointer-events:none;z-index:0;
+  animation:float2 10s ease-in-out infinite;
+}
+@keyframes float1{0%,100%{transform:translate(0,0);}50%{transform:translate(20px,-20px);}}
+@keyframes float2{0%,100%{transform:translate(0,0);}50%{transform:translate(-15px,15px);}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+@keyframes scaleIn{from{opacity:0;transform:scale(0.95);}to{opacity:1;transform:scale(1);}}
 
-  .screens { flex:1; overflow:hidden; position:relative; }
-  .screen { position:absolute; top:0; left:0; right:0; bottom:0; overflow-y:auto; padding:16px; display:none; }
-  .screen.active { display:block; }
+/* HEADER */
+.header{
+  display:flex;align-items:center;gap:10px;
+  padding:14px 18px;flex-shrink:0;position:relative;z-index:10;
+  background:rgba(8,6,15,0.85);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+}
+.logo-box{
+  background:linear-gradient(135deg,#7C3AED,#5B21B6);
+  width:38px;height:38px;border-radius:11px;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  box-shadow:0 4px 16px rgba(124,58,237,0.4);
+}
+.app-name{font-family:'Syne',sans-serif;font-weight:800;font-size:17px;letter-spacing:0.5px;margin-right:4px;}
+.status-dot{width:7px;height:7px;border-radius:50%;background:var(--green);flex-shrink:0;box-shadow:0 0 8px var(--green);}
+.status-txt{color:var(--green);font-size:10px;font-weight:600;letter-spacing:1.5px;}
+.header-right{margin-left:auto;}
+.icon-btn{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:10px;width:36px;height:36px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;color:var(--gray);transition:all 0.2s;
+}
+.icon-btn:active{transform:scale(0.9);}
+.icon-btn svg{width:16px;height:16px;}
 
-  /* VAULT */
-  .hero-card { background:#1A1625; border-radius:20px; padding:24px; margin-bottom:16px; }
-  .hero-title { font-size:28px; font-weight:900; }
-  .hero-sub { color:#6B7280; font-size:12px; margin-top:4px; letter-spacing:1px; }
-  .tab-row { display:flex; background:#1A1625; border-radius:25px; padding:4px; margin-bottom:16px; }
-  .tab-btn { flex:1; padding:10px; border:none; border-radius:22px; background:transparent; color:#6B7280; font-weight:700; font-size:12px; cursor:pointer; transition:all 0.2s; }
-  .tab-btn.active { background:#fff; color:#000; }
-  .action-row { display:flex; gap:12px; margin-bottom:16px; }
-  .add-btn { flex:1; background:#fff; color:#000; border:none; border-radius:25px; padding:14px; font-weight:700; cursor:pointer; font-size:14px; }
-  .list-btn { flex:1; background:#1A1625; color:#fff; border:none; border-radius:25px; padding:14px; font-weight:700; cursor:pointer; font-size:14px; }
-  .song-list { background:#1A1625; border-radius:20px; overflow:hidden; }
-  .song-tile { display:flex; align-items:center; gap:12px; padding:14px; border-bottom:1px solid #0D0B14; cursor:pointer; transition:background 0.2s; }
-  .song-tile:last-child { border-bottom:none; }
-  .song-tile:active { background:#1E1830; }
-  .song-tile.playing { background:#1E1830; }
-  .song-cover { width:50px; height:50px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; background-size:cover; background-position:center; }
-  .song-info { flex:1; min-width:0; }
-  .song-title { font-weight:600; font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .song-title.green { color:#22C55E; }
-  .song-artist { color:#6B7280; font-size:12px; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .song-dur { color:#6B7280; font-size:12px; flex-shrink:0; }
-  .empty-card { background:#1A1625; border-radius:20px; padding:50px 20px; text-align:center; color:#6B7280; font-size:14px; }
+/* SCREENS */
+.screens{flex:1;overflow:hidden;position:relative;z-index:1;}
+.screen{
+  position:absolute;top:0;left:0;right:0;bottom:0;
+  overflow-y:auto;padding:20px;display:none;
+  animation:fadeUp 0.25s ease both;
+}
+.screen::-webkit-scrollbar{width:2px;}
+.screen::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+.screen.active{display:block;}
 
-  /* NOW PLAYING */
-  .now-wrap { padding-bottom:20px; }
-  .big-cover { border-radius:20px; height:270px; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; padding:16px; margin-bottom:12px; position:relative; background-size:cover; background-position:center; }
-  .big-cover-overlay { position:absolute; inset:0; border-radius:20px; background:linear-gradient(to top, rgba(0,0,0,0.7), transparent); }
-  .big-cover-icon { font-size:60px; position:absolute; top:50%; left:50%; transform:translate(-50%,-60%); }
-  .fav-btn-cover { position:absolute; top:12px; right:12px; background:rgba(0,0,0,0.4); border:none; border-radius:50%; width:38px; height:38px; font-size:18px; cursor:pointer; z-index:2; }
-  .now-info { position:relative; z-index:2; width:100%; }
-  .now-title { font-size:22px; font-weight:900; }
-  .now-artist { color:rgba(255,255,255,0.7); font-size:14px; margin-top:2px; }
-  .player-box { background:#1A1625; border-radius:20px; padding:20px; }
-  .progress-bar { height:4px; background:#2D2B3A; border-radius:2px; margin-bottom:8px; cursor:pointer; position:relative; }
-  .progress-fill { height:4px; background:#fff; border-radius:2px; width:0%; transition:width 0.3s linear; pointer-events:none; }
-  .time-row { display:flex; justify-content:space-between; color:#6B7280; font-size:12px; margin-bottom:18px; }
-  .ctrl-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
-  .ctrl-btn { background:none; border:none; color:#6B7280; font-size:24px; cursor:pointer; padding:4px; }
-  .play-btn { background:#fff; border:none; width:64px; height:64px; border-radius:50%; font-size:26px; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 20px rgba(255,255,255,0.2); }
-  .vol-row { display:flex; align-items:center; gap:10px; }
-  .vol-icon { color:#6B7280; font-size:16px; }
-  input[type=range] { flex:1; accent-color:#22C55E; cursor:pointer; }
+/* HERO */
+.hero-card{
+  background:linear-gradient(135deg,rgba(124,58,237,0.18),rgba(34,197,94,0.04));
+  border:1px solid var(--border);border-radius:24px;
+  padding:24px;margin-bottom:20px;position:relative;overflow:hidden;
+}
+.hero-card::after{
+  content:'';position:absolute;top:-40px;right:-40px;
+  width:140px;height:140px;
+  background:radial-gradient(circle,rgba(124,58,237,0.25),transparent 70%);
+}
+.hero-title{font-family:'Syne',sans-serif;font-size:30px;font-weight:800;line-height:1.1;}
+.hero-sub{color:var(--gray);font-size:11px;margin-top:6px;letter-spacing:1.5px;font-weight:500;}
 
-  /* FAVS */
-  .page-title { font-size:28px; font-weight:900; margin-bottom:16px; }
+/* TABS */
+.tab-row{
+  display:flex;background:var(--surface);border:1px solid var(--border);
+  border-radius:100px;padding:4px;margin-bottom:18px;
+}
+.tab-btn{
+  flex:1;padding:9px;border:none;border-radius:100px;
+  background:transparent;color:var(--gray);
+  font-weight:700;font-size:11px;cursor:pointer;
+  letter-spacing:0.5px;transition:all 0.22s;
+  font-family:'DM Sans',sans-serif;
+}
+.tab-btn.active{background:var(--white);color:#000;}
 
-  /* LISTS */
-  .lists-actions { display:flex; gap:12px; margin-bottom:16px; }
-  .spotify-btn { background:#22C55E; color:#000; border:none; border-radius:25px; padding:12px 18px; font-weight:700; cursor:pointer; font-size:13px; display:flex; align-items:center; gap:6px; }
-  .new-list-btn { background:#1A1625; color:#fff; border:none; border-radius:25px; padding:12px 18px; font-weight:700; cursor:pointer; font-size:13px; }
-  .playlist-card { background:#1A1625; border-radius:20px; overflow:hidden; cursor:pointer; }
-  .playlist-cover { height:180px; background:linear-gradient(135deg,#f472b6,#a78bfa,#34d399); }
-  .playlist-name { font-weight:700; font-size:18px; padding:16px 16px 4px; letter-spacing:2px; }
-  .playlist-count { color:#6B7280; font-size:13px; padding:0 16px 16px; }
+/* SEARCH */
+.search-bar{
+  display:flex;align-items:center;gap:10px;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:16px;padding:12px 16px;margin-bottom:14px;
+}
+.search-bar svg{width:15px;height:15px;color:var(--gray);flex-shrink:0;}
+.search-bar input{
+  background:none;border:none;color:var(--white);
+  font-size:14px;flex:1;outline:none;
+  font-family:'DM Sans',sans-serif;
+}
+.search-bar input::placeholder{color:var(--gray);}
 
-  /* ME */
-  .profile-card { display:flex; align-items:center; gap:16px; margin-bottom:20px; }
-  .profile-icon { background:#22C55E; width:80px; height:80px; border-radius:20px; display:flex; align-items:center; justify-content:center; font-size:30px; flex-shrink:0; }
-  .profile-name { font-size:24px; font-weight:900; }
-  .profile-role { color:#22C55E; font-size:12px; font-weight:600; letter-spacing:1px; margin-top:2px; }
-  .info-card { background:#1A1625; border-radius:20px; padding:20px; }
-  .info-section { color:#6B7280; font-size:11px; letter-spacing:2px; margin:12px 0 10px; }
-  .info-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px; }
-  .info-box { background:#0D0B14; border-radius:12px; padding:14px; }
-  .info-label { font-weight:600; font-size:13px; margin-top:8px; }
-  .info-value { color:#6B7280; font-size:12px; margin-top:4px; }
-  .perf-row { display:flex; justify-content:space-between; align-items:center; background:#0D0B14; border-radius:12px; padding:14px 16px; margin-bottom:8px; }
-  .perf-val { font-weight:700; font-size:12px; }
-  .perf-val.green { color:#22C55E; }
+/* ACTIONS */
+.action-row{display:flex;gap:10px;margin-bottom:16px;}
+.add-btn{
+  flex:1;background:var(--white);color:#000;border:none;
+  border-radius:100px;padding:13px;font-weight:700;cursor:pointer;font-size:13px;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  font-family:'DM Sans',sans-serif;transition:transform 0.15s;
+}
+.add-btn:active{transform:scale(0.96);}
+.list-btn{
+  flex:1;background:var(--surface);color:var(--white);
+  border:1px solid var(--border);border-radius:100px;padding:13px;font-weight:700;
+  cursor:pointer;font-size:13px;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  font-family:'DM Sans',sans-serif;transition:transform 0.15s;
+}
+.list-btn:active{transform:scale(0.96);}
 
-  /* MINI PLAYER */
-  .mini-player { display:none; align-items:center; gap:12px; background:#1A1625; padding:12px 16px; border-top:1px solid #2D2B3A; cursor:pointer; flex-shrink:0; }
-  .mini-player.show { display:flex; }
-  .mini-cover { width:46px; height:46px; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0; background-size:cover; background-position:center; font-size:20px; }
-  .mini-info { flex:1; min-width:0; }
-  .mini-title { font-weight:600; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .mini-artist { color:#6B7280; font-size:12px; }
-  .mini-heart { background:none; border:none; font-size:20px; cursor:pointer; padding:4px; }
-  .mini-play { background:#fff; border:none; width:38px; height:38px; border-radius:50%; font-size:16px; cursor:pointer; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
+/* SONG LIST */
+.song-list{background:var(--surface);border:1px solid var(--border);border-radius:20px;overflow:hidden;}
+.song-tile{
+  display:flex;align-items:center;gap:14px;padding:13px 16px;
+  border-bottom:1px solid var(--border);cursor:pointer;
+  transition:background 0.18s;animation:fadeUp 0.3s ease both;
+}
+.song-tile:last-child{border-bottom:none;}
+.song-tile:active,.song-tile.playing{background:var(--green-dim);}
+.song-cover{
+  width:48px;height:48px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;background-size:cover;background-position:center;overflow:hidden;
+}
+.song-cover svg{width:18px;height:18px;opacity:0.4;}
+.song-info{flex:1;min-width:0;}
+.song-title{
+  font-family:'Syne',sans-serif;font-weight:700;font-size:14px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.song-title.playing-green{color:var(--green);}
+.song-meta{color:var(--gray);font-size:11px;margin-top:3px;}
+.song-dur{color:var(--gray);font-size:12px;flex-shrink:0;font-weight:500;}
+.s-del-btn{
+  background:none;border:none;color:var(--gray);
+  width:30px;height:30px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:all 0.15s;flex-shrink:0;
+}
+.s-del-btn svg{width:14px;height:14px;}
+.s-del-btn:active{color:#ef4444;transform:scale(0.85);}
+.empty-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:20px;padding:50px 20px;
+  text-align:center;color:var(--gray);font-size:14px;line-height:1.7;
+}
 
-  /* BOTTOM NAV */
-  .bottom-nav { display:flex; background:#0D0B14; border-top:1px solid #1A1625; padding:6px 0 10px; flex-shrink:0; }
-  .nav-item { flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; padding:6px 4px; cursor:pointer; border:none; background:none; color:#6B7280; transition:color 0.2s; }
-  .nav-item.active { color:#22C55E; }
-  .nav-icon { font-size:22px; line-height:1; }
-  .nav-label { font-size:10px; font-weight:700; letter-spacing:0.5px; }
+/* NOW PLAYING */
+.now-wrap{padding-bottom:20px;}
+.big-cover{
+  border-radius:24px;height:280px;
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
+  padding:20px;margin-bottom:14px;position:relative;
+  background-size:cover;background-position:center;overflow:hidden;
+}
+.cover-grad{
+  position:absolute;inset:0;
+  background:linear-gradient(to top,rgba(8,6,15,0.92) 0%,rgba(8,6,15,0.15) 55%,transparent 100%);
+}
+.cover-empty{
+  position:absolute;inset:0;
+  background:linear-gradient(135deg,#150F2A,#0D0820);
+  display:flex;align-items:center;justify-content:center;
+}
+.cover-empty svg{opacity:0.15;}
+.fav-btn-np{
+  position:absolute;top:14px;right:14px;
+  background:rgba(8,6,15,0.55);backdrop-filter:blur(12px);
+  border:1px solid var(--border);border-radius:50%;
+  width:38px;height:38px;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;z-index:2;transition:transform 0.18s;
+}
+.fav-btn-np:active{transform:scale(0.88);}
+.fav-btn-np svg{width:16px;height:16px;}
+.now-info{position:relative;z-index:2;width:100%;}
+.now-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;line-height:1.2;}
+.now-artist{color:rgba(255,255,255,0.6);font-size:13px;margin-top:4px;}
+.player-box{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:24px;padding:22px;backdrop-filter:blur(10px);
+}
+.prog-wrap{height:3px;background:var(--surface2);border-radius:2px;margin-bottom:10px;cursor:pointer;position:relative;}
+.prog-fill{
+  height:3px;background:var(--white);border-radius:2px;width:0%;
+  transition:width 0.3s linear;position:relative;
+}
+.prog-fill::after{
+  content:'';position:absolute;right:-5px;top:-4px;
+  width:11px;height:11px;background:var(--white);
+  border-radius:50%;box-shadow:0 0 8px rgba(255,255,255,0.4);
+}
+.time-row{display:flex;justify-content:space-between;color:var(--gray);font-size:11px;margin-bottom:20px;font-weight:500;}
+.ctrl-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+.ctrl-btn{
+  background:none;border:none;color:var(--gray);
+  padding:8px;border-radius:10px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:all 0.18s;
+}
+.ctrl-btn svg{width:22px;height:22px;}
+.ctrl-btn:active{transform:scale(0.85);color:var(--white);}
+.play-btn{
+  background:var(--white);border:none;width:64px;height:64px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  box-shadow:0 6px 24px rgba(255,255,255,0.18);transition:transform 0.14s;
+}
+.play-btn:active{transform:scale(0.92);}
+.play-btn svg{width:26px;height:26px;color:#000;}
+.vol-row{display:flex;align-items:center;gap:12px;}
+.vol-row svg{width:15px;height:15px;color:var(--gray);}
+input[type=range]{flex:1;accent-color:var(--green);cursor:pointer;height:3px;}
 
-  /* ADMIN PANEL */
-  .admin-panel { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:#0D0B14; z-index:999; overflow-y:auto; max-width:430px; margin:0 auto; }
-  .admin-panel.show { display:block; }
-  .admin-inner { padding:20px; padding-bottom:40px; }
-  .admin-header { display:flex; align-items:center; gap:12px; margin-bottom:8px; }
-  .admin-title { font-size:22px; font-weight:900; }
-  .close-btn { background:#1A1625; border:none; color:#fff; border-radius:12px; padding:8px 14px; cursor:pointer; font-size:14px; }
-  .admin-sub { color:#6B7280; font-size:13px; margin-bottom:24px; }
-  .input-group { margin-bottom:14px; }
-  .input-label { color:#6B7280; font-size:11px; font-weight:700; letter-spacing:1px; margin-bottom:6px; display:block; }
-  .input-field { width:100%; background:#1A1625; border:none; border-radius:12px; padding:14px; color:#fff; font-size:14px; outline:none; }
-  .input-field::placeholder { color:#4B5563; }
-  .file-upload-box { width:100%; background:#1A1625; border:2px dashed #2D2B3A; border-radius:12px; padding:20px; color:#6B7280; font-size:14px; cursor:pointer; margin-bottom:4px; text-align:center; position:relative; transition:border-color 0.2s; }
-  .file-upload-box:hover { border-color:#22C55E; }
-  .file-upload-box input[type=file] { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; }
-  .file-selected { color:#22C55E; font-size:12px; margin-top:4px; margin-bottom:10px; font-weight:600; }
-  .upload-progress { background:#1A1625; border-radius:12px; padding:12px 16px; margin-bottom:14px; display:none; }
-  .upload-progress.show { display:block; }
-  .progress-label { color:#6B7280; font-size:12px; margin-bottom:6px; }
-  .progress-track { height:4px; background:#2D2B3A; border-radius:2px; }
-  .progress-bar-upload { height:4px; background:#22C55E; border-radius:2px; width:0%; transition:width 0.3s; }
-  .submit-btn { width:100%; background:#22C55E; border:none; border-radius:25px; padding:16px; color:#000; font-weight:900; font-size:16px; cursor:pointer; margin-top:8px; transition:opacity 0.2s; }
-  .submit-btn:disabled { opacity:0.4; cursor:not-allowed; }
-  .status-msg { text-align:center; padding:12px; border-radius:12px; margin-top:12px; font-weight:600; font-size:14px; display:none; }
-  .status-msg.show { display:block; }
-  .status-msg.success { background:#14532d; color:#22C55E; }
-  .status-msg.error { background:#450a0a; color:#ef4444; }
+/* PAGE TITLE */
+.page-title{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;margin-bottom:18px;}
 
-  /* PASSWORD GATE */
-  .pw-gate { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:998; align-items:center; justify-content:center; max-width:430px; margin:0 auto; }
-  .pw-gate.show { display:flex; }
-  .pw-box { background:#1A1625; border-radius:20px; padding:30px; width:90%; }
-  .pw-title { font-size:20px; font-weight:900; margin-bottom:6px; }
-  .pw-sub { color:#6B7280; font-size:13px; margin-bottom:20px; }
-  .pw-input { width:100%; background:#0D0B14; border:none; border-radius:12px; padding:14px; color:#fff; font-size:16px; outline:none; margin-bottom:12px; letter-spacing:4px; text-align:center; }
-  .pw-btn { width:100%; background:#22C55E; border:none; border-radius:12px; padding:14px; color:#000; font-weight:900; font-size:15px; cursor:pointer; }
-  .pw-cancel { width:100%; background:none; border:none; color:#6B7280; padding:10px; cursor:pointer; margin-top:6px; font-size:14px; }
-  .pw-error { color:#ef4444; font-size:13px; text-align:center; margin-top:8px; display:none; }
+/* LISTS */
+.lists-top{display:flex;gap:10px;margin-bottom:20px;}
+.spotify-btn{
+  background:var(--green);color:#000;border:none;
+  border-radius:100px;padding:11px 16px;font-weight:700;cursor:pointer;
+  font-size:12px;letter-spacing:0.5px;display:flex;align-items:center;gap:6px;
+  font-family:'DM Sans',sans-serif;
+}
+.new-list-btn{
+  background:var(--surface);color:var(--white);border:1px solid var(--border);
+  border-radius:100px;padding:11px 16px;font-weight:700;cursor:pointer;
+  font-size:12px;font-family:'DM Sans',sans-serif;
+}
+.playlist-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:20px;overflow:hidden;cursor:pointer;transition:transform 0.18s;
+}
+.playlist-card:active{transform:scale(0.98);}
+.playlist-cover{height:180px;background:linear-gradient(135deg,#f472b6,#a78bfa,#34d399);}
+.playlist-info{padding:16px;}
+.playlist-name{font-family:'Syne',sans-serif;font-weight:800;font-size:18px;letter-spacing:2px;}
+.playlist-count{color:var(--gray);font-size:12px;margin-top:4px;letter-spacing:1px;}
+
+/* ME */
+.profile-hero{
+  background:linear-gradient(135deg,var(--green-dim),var(--purple-dim));
+  border:1px solid var(--border);border-radius:24px;
+  padding:24px;margin-bottom:16px;display:flex;align-items:center;gap:18px;
+}
+.profile-avatar{
+  background:linear-gradient(135deg,#22C55E,#16A34A);
+  width:78px;height:78px;border-radius:20px;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;box-shadow:0 6px 20px rgba(34,197,94,0.3);
+}
+.profile-avatar svg{width:34px;height:34px;color:#fff;}
+.profile-name{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;}
+.profile-role{color:var(--green);font-size:10px;font-weight:700;letter-spacing:2px;margin-top:4px;}
+.info-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:20px;}
+.info-section{color:var(--gray);font-size:10px;letter-spacing:2px;font-weight:700;margin:14px 0 10px;}
+.info-section:first-child{margin-top:0;}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:4px;}
+.info-box{background:rgba(0,0,0,0.25);border:1px solid var(--border);border-radius:14px;padding:14px;}
+.info-icon{color:var(--purple);margin-bottom:8px;}
+.info-icon svg{width:18px;height:18px;}
+.info-label{font-weight:600;font-size:12px;margin-bottom:4px;}
+.info-value{color:var(--gray);font-size:11px;}
+.perf-row{
+  display:flex;justify-content:space-between;align-items:center;
+  background:rgba(0,0,0,0.25);border:1px solid var(--border);
+  border-radius:14px;padding:13px 16px;margin-bottom:8px;
+}
+.perf-val{font-weight:700;font-size:12px;letter-spacing:0.5px;}
+.perf-val.green{color:var(--green);}
+
+/* MINI PLAYER */
+.mini-player{
+  display:none;align-items:center;gap:12px;
+  background:rgba(12,9,22,0.97);backdrop-filter:blur(24px);
+  padding:12px 16px;border-top:1px solid var(--border);
+  flex-shrink:0;position:relative;z-index:10;
+}
+.mini-player.show{display:flex;animation:fadeUp 0.2s ease;}
+.mini-prog-bar{position:absolute;top:0;left:0;right:0;height:2px;background:var(--border);}
+.mini-prog-fill{height:2px;background:var(--green);width:0%;transition:width 0.3s linear;}
+.mini-cover{
+  width:44px;height:44px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;background:var(--surface2);
+  background-size:cover;background-position:center;overflow:hidden;
+}
+.mini-cover svg{width:18px;height:18px;opacity:0.35;}
+.mini-info{flex:1;min-width:0;cursor:pointer;}
+.mini-title{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.mini-artist{color:var(--gray);font-size:11px;margin-top:2px;}
+.mini-acts{display:flex;align-items:center;gap:4px;}
+.mini-act{
+  background:none;border:none;width:34px;height:34px;
+  border-radius:8px;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;color:var(--gray);transition:all 0.15s;
+}
+.mini-act svg{width:18px;height:18px;}
+.mini-act:active{transform:scale(0.85);}
+.mini-play{
+  background:var(--white);border:none;
+  width:36px;height:36px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:transform 0.14s;
+}
+.mini-play svg{width:15px;height:15px;color:#000;}
+.mini-play:active{transform:scale(0.9);}
+
+/* BOTTOM NAV */
+.bottom-nav{
+  display:flex;background:rgba(8,6,15,0.97);backdrop-filter:blur(20px);
+  border-top:1px solid var(--border);padding:8px 0 14px;
+  flex-shrink:0;position:relative;z-index:10;
+}
+.nav-item{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;
+  padding:6px 4px;cursor:pointer;border:none;background:none;
+  color:var(--gray);transition:color 0.2s;font-family:'DM Sans',sans-serif;
+}
+.nav-item.active{color:var(--green);}
+.nav-icon{display:flex;align-items:center;justify-content:center;}
+.nav-icon svg{width:22px;height:22px;}
+.nav-label{font-size:9px;font-weight:700;letter-spacing:1px;}
+
+/* ADMIN LOGIN */
+.admin-login{
+  display:none;position:fixed;inset:0;
+  background:rgba(8,6,15,0.97);backdrop-filter:blur(30px);
+  z-index:999;align-items:center;justify-content:center;
+  max-width:430px;margin:0 auto;
+}
+.admin-login.show{display:flex;animation:scaleIn 0.22s ease;}
+.al-box{width:90%;padding:8px;}
+.al-title{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;margin-bottom:6px;}
+.al-sub{color:var(--gray);font-size:13px;margin-bottom:28px;}
+.al-inp{
+  width:100%;background:var(--surface);border:1px solid var(--border);
+  border-radius:14px;padding:15px 16px;color:var(--white);font-size:14px;
+  outline:none;margin-bottom:12px;font-family:'DM Sans',sans-serif;transition:border-color 0.2s;
+}
+.al-inp:focus{border-color:var(--purple);}
+.al-inp::placeholder{color:rgba(255,255,255,0.2);}
+.al-signin{
+  width:100%;background:var(--green);border:none;border-radius:100px;
+  padding:15px;color:#000;font-weight:800;font-size:14px;cursor:pointer;
+  font-family:'Syne',sans-serif;box-shadow:0 6px 20px rgba(34,197,94,0.28);
+  transition:transform 0.14s;margin-bottom:10px;
+}
+.al-signin:active{transform:scale(0.97);}
+.al-signin:disabled{opacity:0.45;cursor:not-allowed;}
+.al-cancel{
+  width:100%;background:none;border:none;color:var(--gray);
+  padding:10px;cursor:pointer;font-size:13px;font-family:'DM Sans',sans-serif;
+}
+.al-err{
+  color:#ef4444;font-size:12px;text-align:center;margin-top:8px;
+  padding:10px;background:rgba(239,68,68,0.1);border-radius:10px;display:none;
+}
+
+/* ADMIN PANEL */
+.admin-panel{
+  display:none;position:fixed;inset:0;background:var(--bg);
+  z-index:998;overflow-y:auto;max-width:430px;margin:0 auto;
+}
+.admin-panel.show{display:block;animation:fadeUp 0.22s ease;}
+.adm-inner{padding:20px 20px 60px;}
+.adm-top{display:flex;align-items:center;gap:12px;margin-bottom:6px;}
+.adm-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;}
+.back-btn{
+  background:var(--surface);border:1px solid var(--border);color:var(--white);
+  border-radius:12px;padding:8px 14px;cursor:pointer;font-size:13px;
+  font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:5px;
+  transition:all 0.18s;
+}
+.back-btn svg{width:14px;height:14px;}
+.adm-sub{color:var(--gray);font-size:13px;margin-bottom:26px;}
+.inp-grp{margin-bottom:14px;}
+.inp-lbl{color:var(--gray);font-size:10px;font-weight:700;letter-spacing:1.5px;margin-bottom:7px;display:block;}
+.inp-fld{
+  width:100%;background:var(--surface);border:1px solid var(--border);
+  border-radius:14px;padding:14px 16px;color:var(--white);font-size:14px;
+  outline:none;font-family:'DM Sans',sans-serif;transition:border-color 0.2s;
+}
+.inp-fld:focus{border-color:var(--purple);}
+.inp-fld::placeholder{color:rgba(255,255,255,0.18);}
+.file-box{
+  width:100%;background:var(--surface);border:2px dashed var(--border);
+  border-radius:14px;padding:18px;color:var(--gray);font-size:13px;
+  cursor:pointer;margin-bottom:6px;text-align:center;
+  position:relative;transition:border-color 0.2s;
+  display:flex;flex-direction:column;align-items:center;gap:7px;
+}
+.file-box:hover{border-color:var(--green);}
+.file-box svg{width:22px;height:22px;opacity:0.45;}
+.file-box input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;}
+.file-sel{color:var(--green);font-size:11px;margin-bottom:14px;font-weight:600;}
+.upl-prog{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:14px;padding:14px;margin-bottom:14px;display:none;
+}
+.upl-prog.show{display:block;}
+.upl-lbl{color:var(--gray);font-size:12px;margin-bottom:8px;}
+.upl-track{height:3px;background:var(--surface2);border-radius:2px;}
+.upl-bar{height:3px;background:var(--green);border-radius:2px;width:0%;transition:width 0.3s;}
+.submit-btn{
+  width:100%;background:var(--green);border:none;border-radius:100px;
+  padding:16px;color:#000;font-weight:800;font-size:14px;cursor:pointer;
+  font-family:'Syne',sans-serif;box-shadow:0 6px 20px rgba(34,197,94,0.28);
+  transition:transform 0.14s;margin-top:8px;
+}
+.submit-btn:active{transform:scale(0.97);}
+.submit-btn:disabled{opacity:0.4;cursor:not-allowed;}
+.logout-btn{
+  width:100%;background:none;border:1px solid rgba(239,68,68,0.3);
+  color:#ef4444;border-radius:100px;padding:14px;font-weight:700;
+  font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:14px;
+  transition:background 0.18s;
+}
+.logout-btn:active{background:rgba(239,68,68,0.1);}
+
+/* DELETE SHEET */
+.del-overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(8,6,15,0.8);backdrop-filter:blur(10px);
+  z-index:997;align-items:flex-end;max-width:430px;margin:0 auto;
+}
+.del-overlay.show{display:flex;animation:fadeUp 0.2s ease;}
+.del-box{
+  background:#16112A;border:1px solid var(--border);
+  border-radius:24px 24px 0 0;padding:28px 24px 44px;width:100%;
+}
+.del-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;margin-bottom:8px;}
+.del-sub{color:var(--gray);font-size:13px;margin-bottom:24px;}
+.del-yes{
+  width:100%;background:#ef4444;border:none;border-radius:100px;
+  padding:15px;color:#fff;font-weight:800;font-size:14px;cursor:pointer;
+  font-family:'Syne',sans-serif;margin-bottom:10px;
+}
+.del-no{
+  width:100%;background:var(--surface);border:1px solid var(--border);
+  border-radius:100px;padding:15px;color:var(--white);
+  font-weight:700;font-size:14px;cursor:pointer;font-family:'DM Sans',sans-serif;
+}
+
+/* TOAST */
+.toast{
+  position:fixed;bottom:110px;left:50%;transform:translateX(-50%) translateY(10px);
+  padding:11px 20px;border-radius:100px;font-weight:600;font-size:13px;
+  pointer-events:none;opacity:0;z-index:9999;transition:all 0.3s;white-space:nowrap;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.toast.success{background:var(--green);color:#000;}
+.toast.error{background:#ef4444;color:#fff;}
 </style>
 </head>
 <body>
 
-<!-- Header -->
 <div class="header">
-  <div class="logo-box">♪</div>
+  <div class="logo-box">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+  </div>
   <span class="app-name">PULSE</span>
-  <div class="dot"></div>
-  <span class="online">SYSTEM ONLINE</span>
-  <button class="gear-btn" onclick="askAdminPassword()">⚙️</button>
+  <div class="status-dot"></div>
+  <span class="status-txt">SYSTEM ONLINE</span>
+  <div class="header-right">
+    <button class="icon-btn" onclick="openAdminLogin()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M4.93 19.07l1.41-1.41M19.07 19.07l-1.41-1.41M12 2v2M12 20v2M2 12h2M20 12h2"/></svg>
+    </button>
+  </div>
 </div>
 
-<!-- Screens -->
 <div class="screens">
 
   <!-- VAULT -->
   <div class="screen active" id="screen-vault">
     <div class="hero-card">
       <div class="hero-title">Your Sanctuary.</div>
-      <div class="hero-sub" id="hero-sub">0 TRACKS • 0 PLAYLISTS</div>
+      <div class="hero-sub" id="hero-sub">0 TRACKS &bull; 0 PLAYLISTS</div>
     </div>
     <div class="tab-row">
       <button class="tab-btn active" id="tab-lib-btn" onclick="switchTab('library')">LIBRARY</button>
       <button class="tab-btn" id="tab-now-btn" onclick="switchTab('nowplaying')">NOW PLAYING</button>
     </div>
     <div id="tab-library">
-      <div class="action-row">
-        <button class="add-btn" onclick="askAdminPassword()">+ ADD</button>
-        <button class="list-btn">≡ LIST</button>
+      <div class="search-bar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" placeholder="Search tracks..." oninput="filterSongs(this.value)">
       </div>
-      <div class="song-list" id="song-list">
-        <div class="empty-card">No songs yet.<br>Tap + ADD to add songs.</div>
+      <div class="action-row" id="adm-action-row" style="display:none;">
+        <button class="add-btn" onclick="openAdminPanel()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          ADD SONG
+        </button>
+        <button class="list-btn">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          LIST
+        </button>
       </div>
+      <div class="song-list" id="song-list"><div class="empty-card">No songs yet.</div></div>
     </div>
     <div id="tab-nowplaying" style="display:none;">
-      <div id="now-playing-content">
-        <div class="empty-card">No song selected.<br>Tap a song to play.</div>
-      </div>
+      <div id="now-playing-content"><div class="empty-card">No song selected.<br>Tap a track to play.</div></div>
     </div>
   </div>
 
   <!-- FAVS -->
   <div class="screen" id="screen-favs">
     <div class="page-title">Your Favorites</div>
-    <div id="favs-container">
-      <div class="empty-card">No favorites yet.<br>Tap ♡ on any song.</div>
-    </div>
+    <div id="favs-container"><div class="empty-card">No favorites yet.<br>Heart any track to save it here.</div></div>
   </div>
 
   <!-- LISTS -->
   <div class="screen" id="screen-lists">
     <div class="page-title">Playlists</div>
-    <div class="lists-actions">
-      <button class="spotify-btn">🎵 SPOTIFY SYNC</button>
+    <div class="lists-top">
+      <button class="spotify-btn">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+        SPOTIFY SYNC
+      </button>
       <button class="new-list-btn">NEW LIST</button>
     </div>
     <div class="playlist-card">
       <div class="playlist-cover"></div>
-      <div class="playlist-name">ENGLISH</div>
-      <div class="playlist-count" id="playlist-count">0 TRACKS</div>
+      <div class="playlist-info">
+        <div class="playlist-name">ENGLISH</div>
+        <div class="playlist-count" id="playlist-count">0 TRACKS</div>
+      </div>
     </div>
   </div>
 
   <!-- ME -->
   <div class="screen" id="screen-me">
-    <div class="profile-card">
-      <div class="profile-icon">👤</div>
+    <div class="profile-hero">
+      <div class="profile-avatar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>
       <div>
         <div class="profile-name">Premium Owner</div>
         <div class="profile-role">SONIC ARCHITECT</div>
@@ -222,25 +574,19 @@
       <div class="info-section">INTELLIGENCE</div>
       <div class="info-grid">
         <div class="info-box">
-          <div style="color:#7C3AED;font-size:20px;">✦</div>
+          <div class="info-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3z"/></svg></div>
           <div class="info-label">NEURAL VISUALS</div>
           <div class="info-value">Enabled</div>
         </div>
         <div class="info-box">
-          <div style="color:#7C3AED;font-size:20px;">✦</div>
+          <div class="info-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><path d="M7 7h.01"/></svg></div>
           <div class="info-label">ART GEN</div>
           <div class="info-value">Unlimited</div>
         </div>
       </div>
       <div class="info-section">PERFORMANCE</div>
-      <div class="perf-row">
-        <span class="info-label">Audio Quality</span>
-        <span class="perf-val">EXOTIC 32-BIT</span>
-      </div>
-      <div class="perf-row">
-        <span class="info-label">Local Cache</span>
-        <span class="perf-val green" id="cache-count">0 TRACKS</span>
-      </div>
+      <div class="perf-row"><span class="info-label">Audio Quality</span><span class="perf-val">EXOTIC 32-BIT</span></div>
+      <div class="perf-row"><span class="info-label">Local Cache</span><span class="perf-val green" id="cache-count">0 TRACKS</span></div>
     </div>
   </div>
 
@@ -248,258 +594,247 @@
 
 <!-- Mini Player -->
 <div class="mini-player" id="mini-player">
-  <div class="mini-cover" id="mini-cover">♪</div>
+  <div class="mini-prog-bar"><div class="mini-prog-fill" id="mini-prog"></div></div>
+  <div class="mini-cover" id="mini-cover">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+  </div>
   <div class="mini-info" onclick="showNowPlaying()">
     <div class="mini-title" id="mini-title">-</div>
     <div class="mini-artist" id="mini-artist">-</div>
   </div>
-  <button class="mini-heart" id="mini-heart" onclick="toggleFavCurrent()">🤍</button>
-  <button class="mini-play" id="mini-play-btn" onclick="togglePlay()">▶</button>
+  <div class="mini-acts">
+    <button class="mini-act" id="mini-heart-btn" onclick="toggleFavCurrent()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+    </button>
+    <button class="mini-play" id="mini-play-btn" onclick="togglePlay()">
+      <svg id="mini-play-ico" viewBox="0 0 24 24" fill="currentColor" width="15" height="15"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+    </button>
+  </div>
 </div>
 
 <!-- Bottom Nav -->
 <div class="bottom-nav">
   <button class="nav-item active" id="nav-vault" onclick="showScreen('vault')">
-    <span class="nav-icon">⊞</span>
+    <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span>
     <span class="nav-label">VAULT</span>
   </button>
   <button class="nav-item" id="nav-favs" onclick="showScreen('favs')">
-    <span class="nav-icon">♡</span>
+    <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></span>
     <span class="nav-label">FAVS</span>
   </button>
   <button class="nav-item" id="nav-lists" onclick="showScreen('lists')">
-    <span class="nav-icon">≡</span>
+    <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></span>
     <span class="nav-label">LISTS</span>
   </button>
   <button class="nav-item" id="nav-me" onclick="showScreen('me')">
-    <span class="nav-icon">◯</span>
+    <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
     <span class="nav-label">ME</span>
   </button>
 </div>
 
-<!-- Password Gate -->
-<div class="pw-gate" id="pw-gate">
-  <div class="pw-box">
-    <div class="pw-title">🔐 Admin Access</div>
-    <div class="pw-sub">Enter admin password to continue</div>
-    <input class="pw-input" type="password" id="pw-input" placeholder="••••" maxlength="20" onkeydown="if(event.key==='Enter')checkPassword()" />
-    <button class="pw-btn" onclick="checkPassword()">UNLOCK</button>
-    <button class="pw-cancel" onclick="closePwGate()">Cancel</button>
-    <div class="pw-error" id="pw-error">Wrong password. Try again.</div>
+<!-- Admin Login -->
+<div class="admin-login" id="admin-login">
+  <div class="al-box">
+    <div class="al-title">Admin Access</div>
+    <div class="al-sub">Sign in to manage your music library</div>
+    <input class="al-inp" type="email" id="al-email" placeholder="Email address" autocomplete="email">
+    <input class="al-inp" type="password" id="al-pw" placeholder="Password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="al-signin" id="al-btn" onclick="doLogin()">SIGN IN</button>
+    <button class="al-cancel" onclick="closeAdminLogin()">Cancel</button>
+    <div class="al-err" id="al-err">Incorrect email or password.</div>
   </div>
 </div>
 
 <!-- Admin Panel -->
 <div class="admin-panel" id="admin-panel">
-  <div class="admin-inner">
-    <div class="admin-header">
-      <button class="close-btn" onclick="closeAdmin()">✕ Close</button>
-      <div class="admin-title">Add Song</div>
+  <div class="adm-inner">
+    <div class="adm-top">
+      <button class="back-btn" onclick="closeAdmin()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        Back
+      </button>
+      <div class="adm-title">Add Song</div>
     </div>
-    <div class="admin-sub">Upload from your phone + fill details</div>
-
-    <div class="input-group">
-      <label class="input-label">SONG TITLE *</label>
-      <input class="input-field" id="inp-title" placeholder="e.g. Company" />
+    <div class="adm-sub">Upload MP3 from your phone</div>
+    <div class="inp-grp"><label class="inp-lbl">SONG TITLE *</label><input class="inp-fld" id="inp-title" placeholder="e.g. Company"></div>
+    <div class="inp-grp"><label class="inp-lbl">ARTIST *</label><input class="inp-fld" id="inp-artist" placeholder="e.g. Justin Bieber"></div>
+    <div class="inp-grp"><label class="inp-lbl">ALBUM</label><input class="inp-fld" id="inp-album" placeholder="e.g. Purpose"></div>
+    <div class="inp-grp"><label class="inp-lbl">DURATION</label><input class="inp-fld" id="inp-dur" placeholder="e.g. 3:27"></div>
+    <label class="inp-lbl">AUDIO FILE (MP3) *</label>
+    <div class="file-box">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+      Tap to pick MP3
+      <input type="file" accept="audio/*" id="audio-file" onchange="fileSel('audio-file','audio-name')">
     </div>
-    <div class="input-group">
-      <label class="input-label">ARTIST *</label>
-      <input class="input-field" id="inp-artist" placeholder="e.g. Justin Bieber" />
+    <div class="file-sel" id="audio-name"></div>
+    <label class="inp-lbl">COVER IMAGE (optional)</label>
+    <div class="file-box">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      Tap to pick cover photo
+      <input type="file" accept="image/*" id="cover-file" onchange="fileSel('cover-file','cover-name')">
     </div>
-    <div class="input-group">
-      <label class="input-label">ALBUM</label>
-      <input class="input-field" id="inp-album" placeholder="e.g. Purpose" />
+    <div class="file-sel" id="cover-name"></div>
+    <div class="upl-prog" id="upl-prog">
+      <div class="upl-lbl" id="upl-lbl">Uploading...</div>
+      <div class="upl-track"><div class="upl-bar" id="upl-bar"></div></div>
     </div>
-    <div class="input-group">
-      <label class="input-label">DURATION</label>
-      <input class="input-field" id="inp-duration" placeholder="e.g. 3:27" />
-    </div>
-
-    <label class="input-label">AUDIO FILE (MP3) *</label>
-    <div class="file-upload-box">
-      📁 Tap to pick MP3 from phone
-      <input type="file" accept="audio/*" id="audio-file" onchange="fileSelected('audio-file','audio-name')" />
-    </div>
-    <div class="file-selected" id="audio-name"></div>
-
-    <label class="input-label">COVER IMAGE (optional)</label>
-    <div class="file-upload-box">
-      🖼️ Tap to pick cover photo
-      <input type="file" accept="image/*" id="cover-file" onchange="fileSelected('cover-file','cover-name')" />
-    </div>
-    <div class="file-selected" id="cover-name"></div>
-
-    <div class="upload-progress" id="upload-progress">
-      <div class="progress-label" id="progress-label">Uploading audio...</div>
-      <div class="progress-track"><div class="progress-bar-upload" id="progress-bar-upload"></div></div>
-    </div>
-
-    <button class="submit-btn" onclick="addSong()" id="submit-btn">ADD TO PULSE</button>
-    <div class="status-msg" id="status-msg"></div>
+    <button class="submit-btn" id="submit-btn" onclick="addSong()">ADD TO PULSE</button>
+    <button class="logout-btn" onclick="doLogout()">Sign Out</button>
   </div>
 </div>
 
+<!-- Delete Sheet -->
+<div class="del-overlay" id="del-overlay">
+  <div class="del-box">
+    <div class="del-title">Remove Track?</div>
+    <div class="del-sub" id="del-sub">This will permanently remove the song.</div>
+    <button class="del-yes" onclick="confirmDelete()">Remove</button>
+    <button class="del-no" onclick="closeDelete()">Cancel</button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-import { getFirestore, collection, addDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 
-const firebaseConfig = {
-  apiKey: "AIzaSyAgPBIuenXhDyyfokqmTga-K9VyQWk-bRA",
-  authDomain: "pulse-app-f8bd7.firebaseapp.com",
-  projectId: "pulse-app-f8bd7",
-  storageBucket: "pulse-app-f8bd7.firebasestorage.app",
-  messagingSenderId: "711521430114",
-  appId: "1:711521430114:web:75ce5e10aa5dd821457f3b"
-};
+const app = initializeApp({
+  apiKey:"AIzaSyAgPBIuenXhDyyfokqmTga-K9VyQWk-bRA",
+  authDomain:"pulse-app-f8bd7.firebaseapp.com",
+  projectId:"pulse-app-f8bd7",
+  storageBucket:"pulse-app-f8bd7.firebasestorage.app",
+  messagingSenderId:"711521430114",
+  appId:"1:711521430114:web:75ce5e10aa5dd821457f3b"
+});
+const db = getFirestore(app);
+const auth = getAuth(app);
+const CLOUD = 'dfjksclcg', PRESET = 'pulse_upload';
 
-const fbApp = initializeApp(firebaseConfig);
-const db = getFirestore(fbApp);
+let songs=[], currentSong=null, isPlaying=false, isAdmin=false, delId=null;
+let favs = JSON.parse(localStorage.getItem('p_favs')||'[]');
+const audio = new Audio();
 
-// ---- CLOUDINARY CONFIG (free file uploads) ----
-const CLOUD_NAME = 'dfjksclcg'; // <-- fill this after Cloudinary signup
-const UPLOAD_PRESET = 'pulse_upload';             // <-- fill this after Cloudinary setup
+const PAUSE_SVG = `<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>`;
+const PLAY_SVG = `<polygon points="5 3 19 12 5 21 5 3"/>`;
+const HEART_FULL = (c='#ef4444') => `<path fill="${c}" stroke="${c}" stroke-width="2" d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>`;
+const HEART_EMPTY = `<path fill="none" stroke="currentColor" stroke-width="2" d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>`;
 
-window.uploadToCloudinary = async function(file, type, onProgress) {
-  const url = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/${type}/upload`;
-  const formData = new FormData();
-  formData.append('file', file);
-  formData.append('upload_preset', UPLOAD_PRESET);
-
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    xhr.open('POST', url);
-    xhr.upload.onprogress = (e) => {
-      if (e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 100));
-    };
-    xhr.onload = () => {
-      const res = JSON.parse(xhr.responseText);
-      if (res.secure_url) resolve(res.secure_url);
-      else reject(new Error('Upload failed'));
-    };
-    xhr.onerror = () => reject(new Error('Network error'));
-    xhr.send(formData);
-  });
-};
-
-// ---- STATE ----
-let songs = [];
-let currentSong = null;
-let audio = new Audio();
-let isPlaying = false;
-let favorites = JSON.parse(localStorage.getItem('pulse_favs') || '[]');
-
-// ---- LOAD SONGS ----
-onSnapshot(collection(db, 'songs'), (snapshot) => {
-  songs = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+// Auth
+onAuthStateChanged(auth, u => {
+  isAdmin = !!u;
+  document.getElementById('adm-action-row').style.display = isAdmin ? 'flex' : 'none';
   renderSongs();
-  renderFavs();
-  updateCounts();
 });
 
-// ---- RENDER SONGS ----
-window.renderSongs = function() {
-  const list = document.getElementById('song-list');
-  if (!songs.length) {
-    list.innerHTML = '<div class="empty-card">No songs yet.<br>Tap + ADD to add songs.</div>';
-    return;
-  }
-  list.innerHTML = songs.map((s, i) => `
-    <div class="song-tile ${currentSong?.id === s.id ? 'playing' : ''}" onclick="playSong('${s.id}')">
-      <div class="song-cover" style="${s.coverUrl ? `background-image:url(${s.coverUrl})` : `background:${getColor(i)}`}">
-        ${s.coverUrl ? '' : '♪'}
+window.doLogin = async () => {
+  const e=document.getElementById('al-email').value.trim();
+  const p=document.getElementById('al-pw').value;
+  const btn=document.getElementById('al-btn');
+  const err=document.getElementById('al-err');
+  err.style.display='none'; btn.disabled=true; btn.textContent='Signing in...';
+  try { await signInWithEmailAndPassword(auth,e,p); closeAdminLogin(); openAdminPanel(); }
+  catch { err.style.display='block'; }
+  btn.disabled=false; btn.textContent='SIGN IN';
+};
+
+window.doLogout = async () => { await signOut(auth); closeAdmin(); toast('Signed out','success'); };
+
+// Songs
+onSnapshot(collection(db,'songs'), snap => {
+  songs = snap.docs.map(d=>({id:d.id,...d.data()}));
+  renderSongs(); renderFavs(); updateCounts();
+});
+
+const COLORS = ['#1A1030','#0D1A20','#0F1A10','#1A1015','#101A1A'];
+
+window.renderSongs = (list=songs) => {
+  const el = document.getElementById('song-list');
+  if (!list.length) { el.innerHTML='<div class="empty-card">No songs yet.</div>'; return; }
+  el.innerHTML = list.map((s,i) => `
+    <div class="song-tile ${currentSong?.id===s.id?'playing':''}" onclick="playSong('${s.id}')" style="animation-delay:${i*0.035}s">
+      <div class="song-cover" style="${s.coverUrl?`background-image:url(${s.coverUrl})`:`background:${COLORS[i%5]}`}">
+        ${s.coverUrl?'':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>'}
       </div>
       <div class="song-info">
-        <div class="song-title ${currentSong?.id === s.id ? 'green' : ''}">${s.title}</div>
-        <div class="song-artist">${s.artist}${s.album ? ' • ' + s.album : ''}</div>
+        <div class="song-title ${currentSong?.id===s.id?'playing-green':''}">${s.title}</div>
+        <div class="song-meta">${s.artist}${s.album?' &bull; '+s.album:''}</div>
       </div>
-      <span class="song-dur">${s.duration || ''}</span>
+      <span class="song-dur">${s.duration||''}</span>
+      ${isAdmin?`<button class="s-del-btn" onclick="event.stopPropagation();askDelete('${s.id}','${s.title.replace(/'/g,"\\'")}')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+      </button>`:''}
     </div>
   `).join('');
 };
 
-window.getColor = (i) => ['#1A1A2E','#16213E','#0F3460','#533483','#2D132C'][i % 5];
+window.filterSongs = q => renderSongs(q ? songs.filter(s=>s.title.toLowerCase().includes(q.toLowerCase())||s.artist.toLowerCase().includes(q.toLowerCase())) : songs);
 
-// ---- PLAY ----
-window.playSong = function(id) {
-  const song = songs.find(s => s.id === id);
-  if (!song) return;
-  currentSong = song;
-  audio.src = song.audioUrl;
-  audio.play().catch(()=>{});
-  isPlaying = true;
-  updateMiniPlayer();
-  renderSongs();
-  renderNowPlaying();
+window.playSong = id => {
+  const s = songs.find(s=>s.id===id); if (!s) return;
+  currentSong = s; audio.src = s.audioUrl;
+  audio.play().catch(()=>{}); isPlaying = true;
+  updateMini(); renderSongs(); renderNowPlaying();
 };
 
-window.togglePlay = function() {
+window.togglePlay = () => {
   if (!currentSong) return;
-  if (isPlaying) { audio.pause(); isPlaying = false; }
-  else { audio.play().catch(()=>{}); isPlaying = true; }
-  updatePlayButtons();
+  isPlaying ? (audio.pause(), isPlaying=false) : (audio.play().catch(()=>{}), isPlaying=true);
+  updatePlayIcons();
 };
 
-function updatePlayButtons() {
-  document.getElementById('mini-play-btn').textContent = isPlaying ? '⏸' : '▶';
-  const pb = document.getElementById('play-btn-main');
-  if (pb) pb.textContent = isPlaying ? '⏸' : '▶';
-}
+const updatePlayIcons = () => {
+  document.getElementById('mini-play-ico').innerHTML = isPlaying ? PAUSE_SVG : PLAY_SVG;
+  const pb = document.getElementById('np-play-btn');
+  if (pb) pb.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor" width="26" height="26">${isPlaying?PAUSE_SVG:PLAY_SVG}</svg>`;
+};
 
-window.updateMiniPlayer = function() {
-  const mp = document.getElementById('mini-player');
-  mp.classList.add('show');
+const updateMini = () => {
+  document.getElementById('mini-player').classList.add('show');
   document.getElementById('mini-title').textContent = currentSong.title;
   document.getElementById('mini-artist').textContent = currentSong.artist;
-  document.getElementById('mini-play-btn').textContent = '⏸';
+  updatePlayIcons(); updateMiniHeart();
   const mc = document.getElementById('mini-cover');
-  if (currentSong.coverUrl) {
-    mc.style.backgroundImage = `url(${currentSong.coverUrl})`;
-    mc.style.backgroundSize = 'cover';
-    mc.textContent = '';
-  } else {
-    mc.style.backgroundImage = '';
-    mc.textContent = '♪';
-  }
-  updateHeartBtn();
+  if (currentSong.coverUrl) { mc.style.backgroundImage=`url(${currentSong.coverUrl})`; mc.style.backgroundSize='cover'; mc.innerHTML=''; }
+  else { mc.style.backgroundImage=''; mc.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" style="opacity:.35"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>'; }
 };
 
-function updateHeartBtn() {
-  if (!currentSong) return;
-  document.getElementById('mini-heart').textContent = favorites.includes(currentSong.id) ? '❤️' : '🤍';
-}
+const updateMiniHeart = () => {
+  const btn = document.getElementById('mini-heart-btn'); if (!btn||!currentSong) return;
+  const isFav = favs.includes(currentSong.id);
+  btn.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18">${isFav?HEART_FULL():HEART_EMPTY}</svg>`;
+};
 
-// ---- NOW PLAYING ----
-window.renderNowPlaying = function() {
+window.renderNowPlaying = () => {
   if (!currentSong) return;
-  const isFav = favorites.includes(currentSong.id);
+  const isFav = favs.includes(currentSong.id);
   document.getElementById('now-playing-content').innerHTML = `
     <div class="now-wrap">
-      <div class="big-cover" style="${currentSong.coverUrl ? `background-image:url(${currentSong.coverUrl})` : `background:#1A1A2E`}">
-        <div class="big-cover-overlay"></div>
-        ${!currentSong.coverUrl ? '<span class="big-cover-icon">♪</span>' : ''}
-        <button class="fav-btn-cover" onclick="toggleFavCurrent()">${isFav ? '❤️' : '🤍'}</button>
+      <div class="big-cover" style="${currentSong.coverUrl?`background-image:url(${currentSong.coverUrl})`:''}">
+        ${!currentSong.coverUrl?`<div class="cover-empty"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" width="64" height="64"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>`:''}
+        <div class="cover-grad"></div>
+        <button class="fav-btn-np" onclick="toggleFavCurrent()">
+          <svg viewBox="0 0 24 24" width="16" height="16">${isFav?HEART_FULL():HEART_EMPTY}</svg>
+        </button>
         <div class="now-info">
           <div class="now-title">${currentSong.title}</div>
           <div class="now-artist">${currentSong.artist}</div>
         </div>
       </div>
       <div class="player-box">
-        <div class="progress-bar" id="prog-bar" onclick="seekAudio(event)">
-          <div class="progress-fill" id="progress-fill"></div>
-        </div>
-        <div class="time-row">
-          <span id="time-cur">0:00</span>
-          <span id="time-total">${currentSong.duration || '0:00'}</span>
-        </div>
+        <div class="prog-wrap" onclick="seekAudio(event)"><div class="prog-fill" id="prog-fill"></div></div>
+        <div class="time-row"><span id="time-cur">0:00</span><span>${currentSong.duration||'0:00'}</span></div>
         <div class="ctrl-row">
-          <button class="ctrl-btn">⇄</button>
-          <button class="ctrl-btn" onclick="prevSong()">⏮</button>
-          <button class="play-btn" id="play-btn-main" onclick="togglePlay()">${isPlaying ? '⏸' : '▶'}</button>
-          <button class="ctrl-btn" onclick="nextSong()">⏭</button>
-          <button class="ctrl-btn">↺</button>
+          <button class="ctrl-btn" onclick="shufflePlay()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/></svg></button>
+          <button class="ctrl-btn" onclick="prevSong()"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="19 20 9 12 19 4 19 20"/><line x1="5" y1="19" x2="5" y2="5" stroke="currentColor" stroke-width="2"/></svg></button>
+          <button class="play-btn" id="np-play-btn" onclick="togglePlay()"><svg viewBox="0 0 24 24" fill="currentColor" width="26" height="26">${isPlaying?PAUSE_SVG:PLAY_SVG}</svg></button>
+          <button class="ctrl-btn" onclick="nextSong()"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19" stroke="currentColor" stroke-width="2"/></svg></button>
+          <button class="ctrl-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></button>
         </div>
         <div class="vol-row">
-          <span class="vol-icon">🔊</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
           <input type="range" min="0" max="1" step="0.01" value="${audio.volume}" oninput="audio.volume=this.value">
         </div>
       </div>
@@ -507,211 +842,132 @@ window.renderNowPlaying = function() {
   `;
 };
 
-window.seekAudio = function(e) {
-  if (!audio.duration) return;
-  const pct = e.offsetX / e.currentTarget.offsetWidth;
-  audio.currentTime = pct * audio.duration;
-};
-
-window.prevSong = function() {
-  if (!songs.length) return;
-  const idx = songs.findIndex(s => s.id === currentSong?.id);
-  playSong(songs[(idx - 1 + songs.length) % songs.length].id);
-};
-
-window.nextSong = function() {
-  if (!songs.length) return;
-  const idx = songs.findIndex(s => s.id === currentSong?.id);
-  playSong(songs[(idx + 1) % songs.length].id);
-};
+window.seekAudio = e => { if (!audio.duration) return; audio.currentTime = (e.offsetX/e.currentTarget.offsetWidth)*audio.duration; };
+window.prevSong = () => { if(!songs.length)return; const i=songs.findIndex(s=>s.id===currentSong?.id); playSong(songs[(i-1+songs.length)%songs.length].id); };
+window.nextSong = () => { if(!songs.length)return; const i=songs.findIndex(s=>s.id===currentSong?.id); playSong(songs[(i+1)%songs.length].id); };
+window.shufflePlay = () => { if(songs.length) playSong(songs[Math.floor(Math.random()*songs.length)].id); };
 
 audio.addEventListener('timeupdate', () => {
   if (!audio.duration) return;
-  const pct = (audio.currentTime / audio.duration) * 100;
-  const fill = document.getElementById('progress-fill');
-  if (fill) fill.style.width = pct + '%';
-  const cur = document.getElementById('time-cur');
-  if (cur) {
-    const m = Math.floor(audio.currentTime / 60);
-    const s = Math.floor(audio.currentTime % 60).toString().padStart(2,'0');
-    cur.textContent = `${m}:${s}`;
-  }
+  const p = audio.currentTime/audio.duration*100;
+  const f=document.getElementById('prog-fill'); if(f) f.style.width=p+'%';
+  const mf=document.getElementById('mini-prog'); if(mf) mf.style.width=p+'%';
+  const tc=document.getElementById('time-cur');
+  if(tc){const m=Math.floor(audio.currentTime/60),s=Math.floor(audio.currentTime%60).toString().padStart(2,'0'); tc.textContent=`${m}:${s}`;}
 });
-audio.addEventListener('ended', () => { isPlaying = false; nextSong(); });
+audio.addEventListener('ended', () => { isPlaying=false; nextSong(); });
 
-// ---- FAVORITES ----
-window.toggleFavCurrent = function() {
-  if (!currentSong) return;
-  toggleFav(currentSong.id);
-  renderNowPlaying();
-  updateHeartBtn();
+// Favs
+window.toggleFavCurrent = () => { if(!currentSong)return; toggleFav(currentSong.id); renderNowPlaying(); updateMiniHeart(); };
+window.toggleFav = id => {
+  favs.includes(id) ? favs=favs.filter(f=>f!==id) : favs.push(id);
+  localStorage.setItem('p_favs',JSON.stringify(favs)); renderFavs();
 };
-
-window.toggleFav = function(id) {
-  if (favorites.includes(id)) favorites = favorites.filter(f => f !== id);
-  else favorites.push(id);
-  localStorage.setItem('pulse_favs', JSON.stringify(favorites));
-  renderFavs();
-};
-
-window.renderFavs = function() {
-  const favSongs = songs.filter(s => favorites.includes(s.id));
+window.renderFavs = () => {
+  const fs = songs.filter(s=>favs.includes(s.id));
   const el = document.getElementById('favs-container');
-  if (!favSongs.length) {
-    el.innerHTML = '<div class="empty-card">No favorites yet.<br>Tap ♡ on any song.</div>';
-    return;
-  }
-  el.innerHTML = '<div class="song-list">' + favSongs.map((s, i) => `
-    <div class="song-tile" onclick="playSong('${s.id}')">
-      <div class="song-cover" style="${s.coverUrl ? `background-image:url(${s.coverUrl})` : `background:${getColor(i)}`}">
-        ${s.coverUrl ? '' : '♪'}
+  if (!fs.length) { el.innerHTML='<div class="empty-card">No favorites yet.<br>Heart any track to save it here.</div>'; return; }
+  el.innerHTML = `<div class="song-list">${fs.map((s,i)=>`
+    <div class="song-tile" onclick="playSong('${s.id}')" style="animation-delay:${i*0.04}s">
+      <div class="song-cover" style="${s.coverUrl?`background-image:url(${s.coverUrl})`:`background:${COLORS[i%5]}`}">
+        ${s.coverUrl?'':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>'}
       </div>
-      <div class="song-info">
-        <div class="song-title">${s.title}</div>
-        <div class="song-artist">${s.artist}</div>
-      </div>
+      <div class="song-info"><div class="song-title">${s.title}</div><div class="song-meta">${s.artist}</div></div>
     </div>
-  `).join('') + '</div>';
+  `).join('')}</div>`;
 };
 
-window.updateCounts = function() {
-  document.getElementById('hero-sub').textContent = `${songs.length} TRACKS • 1 PLAYLISTS`;
-  document.getElementById('playlist-count').textContent = `${songs.length} TRACKS`;
-  document.getElementById('cache-count').textContent = `${songs.length} TRACKS`;
+window.updateCounts = () => {
+  document.getElementById('hero-sub').textContent=`${songs.length} TRACKS \u2022 1 PLAYLISTS`;
+  document.getElementById('playlist-count').textContent=`${songs.length} TRACKS`;
+  document.getElementById('cache-count').textContent=`${songs.length} TRACKS`;
 };
 
-// ---- ADD SONG ----
-window.addSong = async function() {
-  const title = document.getElementById('inp-title').value.trim();
-  const artist = document.getElementById('inp-artist').value.trim();
-  const audioFileEl = document.getElementById('audio-file');
+// Upload
+const uploadCloud = (file, type, onP) => new Promise((res,rej) => {
+  const fd=new FormData(); fd.append('file',file); fd.append('upload_preset',PRESET);
+  const xhr=new XMLHttpRequest();
+  xhr.open('POST',`https://api.cloudinary.com/v1_1/${CLOUD}/${type}/upload`);
+  xhr.upload.onprogress=e=>{if(e.lengthComputable)onP(Math.round(e.loaded/e.total*100));};
+  xhr.onload=()=>{const r=JSON.parse(xhr.responseText);r.secure_url?res(r.secure_url):rej(new Error('Upload failed'));};
+  xhr.onerror=()=>rej(new Error('Network error'));
+  xhr.send(fd);
+});
 
-  if (!title || !artist) { showStatus('Fill Title and Artist!', 'error'); return; }
-  if (!audioFileEl.files[0]) { showStatus('Pick an MP3 file!', 'error'); return; }
-
-  const btn = document.getElementById('submit-btn');
-  btn.disabled = true;
-  btn.textContent = 'Uploading...';
-
-  const prog = document.getElementById('upload-progress');
-  const progBar = document.getElementById('progress-bar-upload');
-  const progLabel = document.getElementById('progress-label');
+window.addSong = async () => {
+  const title=document.getElementById('inp-title').value.trim();
+  const artist=document.getElementById('inp-artist').value.trim();
+  const af=document.getElementById('audio-file');
+  if (!title||!artist){toast('Fill Title and Artist!','error');return;}
+  if (!af.files[0]){toast('Pick an MP3 file!','error');return;}
+  const btn=document.getElementById('submit-btn');
+  btn.disabled=true; btn.textContent='Uploading...';
+  const prog=document.getElementById('upl-prog');
+  const bar=document.getElementById('upl-bar');
+  const lbl=document.getElementById('upl-lbl');
   prog.classList.add('show');
-
   try {
-    progLabel.textContent = 'Uploading audio...';
-    const audioUrl = await uploadToCloudinary(audioFileEl.files[0], 'raw', (p) => {
-      progBar.style.width = p + '%';
-      progLabel.textContent = `Uploading audio... ${p}%`;
-    });
-
-    let coverUrl = '';
-    const coverFileEl = document.getElementById('cover-file');
-    if (coverFileEl.files[0]) {
-      progLabel.textContent = 'Uploading cover...';
-      progBar.style.width = '0%';
-      coverUrl = await uploadToCloudinary(coverFileEl.files[0], 'image', (p) => {
-        progBar.style.width = p + '%';
-        progLabel.textContent = `Uploading cover... ${p}%`;
-      });
-    }
-
-    await addDoc(collection(db, 'songs'), {
-      title,
-      artist,
-      album: document.getElementById('inp-album').value.trim(),
-      duration: document.getElementById('inp-duration').value.trim(),
-      audioUrl,
-      coverUrl,
-      addedAt: new Date()
-    });
-
-    showStatus('✅ Song added to Pulse!', 'success');
-    ['inp-title','inp-artist','inp-album','inp-duration'].forEach(id => document.getElementById(id).value = '');
-    audioFileEl.value = '';
-    document.getElementById('cover-file').value = '';
-    document.getElementById('audio-name').textContent = '';
-    document.getElementById('cover-name').textContent = '';
-
-  } catch(e) {
-    showStatus('❌ ' + e.message, 'error');
-  }
-
-  prog.classList.remove('show');
-  progBar.style.width = '0%';
-  btn.disabled = false;
-  btn.textContent = 'ADD TO PULSE';
+    lbl.textContent='Uploading audio...';
+    const audioUrl=await uploadCloud(af.files[0],'raw',p=>{bar.style.width=p+'%';lbl.textContent=`Uploading audio... ${p}%`;});
+    let coverUrl='';
+    const cf=document.getElementById('cover-file');
+    if (cf.files[0]){bar.style.width='0%';lbl.textContent='Uploading cover...';coverUrl=await uploadCloud(cf.files[0],'image',p=>{bar.style.width=p+'%';lbl.textContent=`Cover... ${p}%`;});}
+    await addDoc(collection(db,'songs'),{title,artist,album:document.getElementById('inp-album').value.trim(),duration:document.getElementById('inp-dur').value.trim(),audioUrl,coverUrl,addedAt:new Date()});
+    toast('Song added!','success');
+    ['inp-title','inp-artist','inp-album','inp-dur'].forEach(id=>document.getElementById(id).value='');
+    af.value=''; cf.value='';
+    document.getElementById('audio-name').textContent='';
+    document.getElementById('cover-name').textContent='';
+  } catch(e){toast('Error: '+e.message,'error');}
+  prog.classList.remove('show'); bar.style.width='0%';
+  btn.disabled=false; btn.textContent='ADD TO PULSE';
 };
 
-window.showStatus = function(msg, type) {
-  const el = document.getElementById('status-msg');
-  el.textContent = msg;
-  el.className = 'status-msg show ' + type;
-  setTimeout(() => { el.className = 'status-msg'; }, 3000);
+window.fileSel = (inp,name) => {
+  const f=document.getElementById(inp).files[0];
+  document.getElementById(name).textContent=f?f.name:'';
+};
+
+// Delete
+window.askDelete = (id,title) => {
+  delId=id;
+  document.getElementById('del-sub').textContent=`"${title}" will be permanently removed.`;
+  document.getElementById('del-overlay').classList.add('show');
+};
+window.confirmDelete = async () => {
+  if (!delId) return;
+  try{await deleteDoc(doc(db,'songs',delId));toast('Removed','success');}catch{toast('Error','error');}
+  closeDelete();
+};
+window.closeDelete = () => { document.getElementById('del-overlay').classList.remove('show'); delId=null; };
+
+// Toast
+window.toast = (msg,type) => {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className=`toast show ${type}`;
+  setTimeout(()=>t.className='toast',2500);
 };
 
 </script>
 
 <script>
-// ---- NAVIGATION ----
-const ADMIN_PASSWORD = 'pulse2024'; // Change this to your password!
-
-function showScreen(name) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById('screen-' + name).classList.add('active');
-  document.getElementById('nav-' + name).classList.add('active');
+function showScreen(name){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('screen-'+name).classList.add('active');
+  document.getElementById('nav-'+name).classList.add('active');
 }
-
-function switchTab(name) {
-  document.getElementById('tab-lib-btn').classList.toggle('active', name === 'library');
-  document.getElementById('tab-now-btn').classList.toggle('active', name === 'nowplaying');
-  document.getElementById('tab-library').style.display = name === 'library' ? 'block' : 'none';
-  document.getElementById('tab-nowplaying').style.display = name === 'nowplaying' ? 'block' : 'none';
+function switchTab(name){
+  document.getElementById('tab-lib-btn').classList.toggle('active',name==='library');
+  document.getElementById('tab-now-btn').classList.toggle('active',name==='nowplaying');
+  document.getElementById('tab-library').style.display=name==='library'?'block':'none';
+  document.getElementById('tab-nowplaying').style.display=name==='nowplaying'?'block':'none';
 }
-
-function showNowPlaying() {
-  showScreen('vault');
-  switchTab('nowplaying');
-}
-
-// ---- PASSWORD GATE ----
-let pendingAction = null;
-
-function askAdminPassword() {
-  document.getElementById('pw-gate').classList.add('show');
-  document.getElementById('pw-input').value = '';
-  document.getElementById('pw-error').style.display = 'none';
-  setTimeout(() => document.getElementById('pw-input').focus(), 100);
-}
-
-function closePwGate() {
-  document.getElementById('pw-gate').classList.remove('show');
-}
-
-function checkPassword() {
-  const val = document.getElementById('pw-input').value;
-  if (val === ADMIN_PASSWORD) {
-    closePwGate();
-    openAdmin();
-  } else {
-    document.getElementById('pw-error').style.display = 'block';
-    document.getElementById('pw-input').value = '';
-  }
-}
-
-function openAdmin() {
-  document.getElementById('admin-panel').classList.add('show');
-}
-
-function closeAdmin() {
-  document.getElementById('admin-panel').classList.remove('show');
-}
-
-function fileSelected(inputId, nameId) {
-  const file = document.getElementById(inputId).files[0];
-  document.getElementById(nameId).textContent = file ? '✅ ' + file.name : '';
-}
+function showNowPlaying(){showScreen('vault');switchTab('nowplaying');}
+function openAdminLogin(){document.getElementById('admin-login').classList.add('show');setTimeout(()=>document.getElementById('al-email').focus(),100);}
+function closeAdminLogin(){document.getElementById('admin-login').classList.remove('show');}
+function openAdminPanel(){document.getElementById('admin-panel').classList.add('show');}
+function closeAdmin(){document.getElementById('admin-panel').classList.remove('show');}
 </script>
 
 </body>
