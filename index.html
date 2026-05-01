@@ -599,7 +599,7 @@ window.addSong = async function() {
 
   try {
     progLabel.textContent = 'Uploading audio...';
-    const audioUrl = await uploadToCloudinary(audioFileEl.files[0], 'video', (p) => {
+    const audioUrl = await uploadToCloudinary(audioFileEl.files[0], 'raw', (p) => {
       progBar.style.width = p + '%';
       progLabel.textContent = `Uploading audio... ${p}%`;
     });
