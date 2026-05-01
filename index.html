@@ -2,99 +2,148 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>Pulse</title>
 <style>
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body { background:#0D0B14; color:#fff; font-family:sans-serif; max-width:430px; margin:0 auto; height:100vh; display:flex; flex-direction:column; overflow:hidden; }
-  .header { display:flex; align-items:center; gap:8px; padding:16px; }
-  .logo-box { background:#7C3AED; width:40px; height:40px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:20px; }
-  .app-name { font-weight:900; font-size:18px; margin-right:8px; }
-  .dot { width:8px; height:8px; border-radius:50%; background:#22C55E; }
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body { background:#0D0B14; color:#fff; font-family:sans-serif; max-width:430px; margin:0 auto; height:100dvh; display:flex; flex-direction:column; overflow:hidden; }
+  
+  .header { display:flex; align-items:center; gap:8px; padding:14px 16px; flex-shrink:0; }
+  .logo-box { background:#7C3AED; width:40px; height:40px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+  .app-name { font-weight:900; font-size:18px; margin-right:6px; }
+  .dot { width:8px; height:8px; border-radius:50%; background:#22C55E; flex-shrink:0; }
   .online { color:#22C55E; font-size:11px; font-weight:600; }
-  .screen { flex:1; overflow-y:auto; padding:16px; display:none; }
+  .gear-btn { margin-left:auto; background:none; border:none; color:#6B7280; font-size:22px; cursor:pointer; padding:4px; }
+
+  .screens { flex:1; overflow:hidden; position:relative; }
+  .screen { position:absolute; top:0; left:0; right:0; bottom:0; overflow-y:auto; padding:16px; display:none; }
   .screen.active { display:block; }
+
+  /* VAULT */
   .hero-card { background:#1A1625; border-radius:20px; padding:24px; margin-bottom:16px; }
   .hero-title { font-size:28px; font-weight:900; }
-  .hero-sub { color:#6B7280; font-size:12px; margin-top:4px; }
+  .hero-sub { color:#6B7280; font-size:12px; margin-top:4px; letter-spacing:1px; }
   .tab-row { display:flex; background:#1A1625; border-radius:25px; padding:4px; margin-bottom:16px; }
-  .tab-btn { flex:1; padding:10px; border:none; border-radius:22px; background:transparent; color:#6B7280; font-weight:700; font-size:12px; cursor:pointer; }
+  .tab-btn { flex:1; padding:10px; border:none; border-radius:22px; background:transparent; color:#6B7280; font-weight:700; font-size:12px; cursor:pointer; transition:all 0.2s; }
   .tab-btn.active { background:#fff; color:#000; }
   .action-row { display:flex; gap:12px; margin-bottom:16px; }
   .add-btn { flex:1; background:#fff; color:#000; border:none; border-radius:25px; padding:14px; font-weight:700; cursor:pointer; font-size:14px; }
   .list-btn { flex:1; background:#1A1625; color:#fff; border:none; border-radius:25px; padding:14px; font-weight:700; cursor:pointer; font-size:14px; }
   .song-list { background:#1A1625; border-radius:20px; overflow:hidden; }
   .song-tile { display:flex; align-items:center; gap:12px; padding:14px; border-bottom:1px solid #0D0B14; cursor:pointer; transition:background 0.2s; }
-  .song-tile:hover { background:#1E1830; }
+  .song-tile:last-child { border-bottom:none; }
+  .song-tile:active { background:#1E1830; }
   .song-tile.playing { background:#1E1830; }
-  .song-cover { width:50px; height:50px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
-  .song-info { flex:1; overflow:hidden; }
+  .song-cover { width:50px; height:50px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; background-size:cover; background-position:center; }
+  .song-info { flex:1; min-width:0; }
   .song-title { font-weight:600; font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .song-title.green { color:#22C55E; }
-  .song-artist { color:#6B7280; font-size:12px; margin-top:2px; }
+  .song-artist { color:#6B7280; font-size:12px; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .song-dur { color:#6B7280; font-size:12px; flex-shrink:0; }
-  .empty-card { background:#1A1625; border-radius:20px; padding:60px; text-align:center; color:#6B7280; }
-  .page-title { font-size:28px; font-weight:900; margin-bottom:16px; }
-  .now-playing-full { padding:0; }
-  .big-cover { border-radius:20px; height:280px; display:flex; flex-direction:column; align-items:center; justify-content:center; margin-bottom:8px; font-size:60px; position:relative; }
-  .fav-btn-cover { position:absolute; top:12px; right:12px; background:rgba(255,255,255,0.2); border:none; border-radius:50%; width:36px; height:36px; color:#fff; font-size:18px; cursor:pointer; }
-  .now-title { font-size:22px; font-weight:900; margin-top:12px; }
-  .now-artist { color:#6B7280; font-size:14px; margin-top:4px; }
+  .empty-card { background:#1A1625; border-radius:20px; padding:50px 20px; text-align:center; color:#6B7280; font-size:14px; }
+
+  /* NOW PLAYING */
+  .now-wrap { padding-bottom:20px; }
+  .big-cover { border-radius:20px; height:270px; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; padding:16px; margin-bottom:12px; position:relative; background-size:cover; background-position:center; }
+  .big-cover-overlay { position:absolute; inset:0; border-radius:20px; background:linear-gradient(to top, rgba(0,0,0,0.7), transparent); }
+  .big-cover-icon { font-size:60px; position:absolute; top:50%; left:50%; transform:translate(-50%,-60%); }
+  .fav-btn-cover { position:absolute; top:12px; right:12px; background:rgba(0,0,0,0.4); border:none; border-radius:50%; width:38px; height:38px; font-size:18px; cursor:pointer; z-index:2; }
+  .now-info { position:relative; z-index:2; width:100%; }
+  .now-title { font-size:22px; font-weight:900; }
+  .now-artist { color:rgba(255,255,255,0.7); font-size:14px; margin-top:2px; }
   .player-box { background:#1A1625; border-radius:20px; padding:20px; }
-  .progress-bar { height:4px; background:#2D2B3A; border-radius:2px; margin-bottom:8px; cursor:pointer; }
-  .progress-fill { height:4px; background:#fff; border-radius:2px; width:0%; transition:width 0.5s; }
-  .time-row { display:flex; justify-content:space-between; color:#6B7280; font-size:12px; margin-bottom:16px; }
-  .ctrl-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
-  .ctrl-btn { background:none; border:none; color:#6B7280; font-size:22px; cursor:pointer; }
-  .play-btn { background:#fff; border:none; width:60px; height:60px; border-radius:50%; font-size:24px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
-  .vol-row { display:flex; align-items:center; gap:8px; }
-  .vol-icon { color:#6B7280; }
-  .vol-slider { flex:1; accent-color:#22C55E; }
+  .progress-bar { height:4px; background:#2D2B3A; border-radius:2px; margin-bottom:8px; cursor:pointer; position:relative; }
+  .progress-fill { height:4px; background:#fff; border-radius:2px; width:0%; transition:width 0.3s linear; pointer-events:none; }
+  .time-row { display:flex; justify-content:space-between; color:#6B7280; font-size:12px; margin-bottom:18px; }
+  .ctrl-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
+  .ctrl-btn { background:none; border:none; color:#6B7280; font-size:24px; cursor:pointer; padding:4px; }
+  .play-btn { background:#fff; border:none; width:64px; height:64px; border-radius:50%; font-size:26px; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 20px rgba(255,255,255,0.2); }
+  .vol-row { display:flex; align-items:center; gap:10px; }
+  .vol-icon { color:#6B7280; font-size:16px; }
+  input[type=range] { flex:1; accent-color:#22C55E; cursor:pointer; }
+
+  /* FAVS */
+  .page-title { font-size:28px; font-weight:900; margin-bottom:16px; }
+
+  /* LISTS */
+  .lists-actions { display:flex; gap:12px; margin-bottom:16px; }
+  .spotify-btn { background:#22C55E; color:#000; border:none; border-radius:25px; padding:12px 18px; font-weight:700; cursor:pointer; font-size:13px; display:flex; align-items:center; gap:6px; }
+  .new-list-btn { background:#1A1625; color:#fff; border:none; border-radius:25px; padding:12px 18px; font-weight:700; cursor:pointer; font-size:13px; }
   .playlist-card { background:#1A1625; border-radius:20px; overflow:hidden; cursor:pointer; }
   .playlist-cover { height:180px; background:linear-gradient(135deg,#f472b6,#a78bfa,#34d399); }
   .playlist-name { font-weight:700; font-size:18px; padding:16px 16px 4px; letter-spacing:2px; }
   .playlist-count { color:#6B7280; font-size:13px; padding:0 16px 16px; }
+
+  /* ME */
   .profile-card { display:flex; align-items:center; gap:16px; margin-bottom:20px; }
   .profile-icon { background:#22C55E; width:80px; height:80px; border-radius:20px; display:flex; align-items:center; justify-content:center; font-size:30px; flex-shrink:0; }
   .profile-name { font-size:24px; font-weight:900; }
-  .profile-role { color:#22C55E; font-size:12px; font-weight:600; letter-spacing:1px; }
+  .profile-role { color:#22C55E; font-size:12px; font-weight:600; letter-spacing:1px; margin-top:2px; }
   .info-card { background:#1A1625; border-radius:20px; padding:20px; }
-  .info-section { color:#6B7280; font-size:11px; letter-spacing:2px; margin:12px 0 8px; }
-  .info-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px; }
-  .info-box { background:#0D0B14; border-radius:12px; padding:16px; }
+  .info-section { color:#6B7280; font-size:11px; letter-spacing:2px; margin:12px 0 10px; }
+  .info-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px; }
+  .info-box { background:#0D0B14; border-radius:12px; padding:14px; }
   .info-label { font-weight:600; font-size:13px; margin-top:8px; }
   .info-value { color:#6B7280; font-size:12px; margin-top:4px; }
-  .perf-row { display:flex; justify-content:space-between; align-items:center; background:#0D0B14; border-radius:12px; padding:16px; margin-bottom:8px; }
+  .perf-row { display:flex; justify-content:space-between; align-items:center; background:#0D0B14; border-radius:12px; padding:14px 16px; margin-bottom:8px; }
   .perf-val { font-weight:700; font-size:12px; }
   .perf-val.green { color:#22C55E; }
-  .mini-player { display:none; align-items:center; gap:12px; background:#1A1625; padding:12px; border-top:1px solid #2D2B3A; cursor:pointer; }
+
+  /* MINI PLAYER */
+  .mini-player { display:none; align-items:center; gap:12px; background:#1A1625; padding:12px 16px; border-top:1px solid #2D2B3A; cursor:pointer; flex-shrink:0; }
   .mini-player.show { display:flex; }
-  .mini-cover { width:46px; height:46px; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-  .mini-info { flex:1; overflow:hidden; }
+  .mini-cover { width:46px; height:46px; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0; background-size:cover; background-position:center; font-size:20px; }
+  .mini-info { flex:1; min-width:0; }
   .mini-title { font-weight:600; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .mini-artist { color:#6B7280; font-size:12px; }
-  .mini-play { background:#fff; border:none; width:36px; height:36px; border-radius:50%; font-size:14px; cursor:pointer; flex-shrink:0; }
-  .bottom-nav { display:flex; background:#0D0B14; border-top:1px solid #1A1625; padding:8px 0; }
-  .nav-item { flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; padding:6px; cursor:pointer; border:none; background:none; color:#6B7280; }
-  .nav-item.active { color:#22C55E; }
-  .nav-icon { font-size:20px; }
-  .nav-label { font-size:10px; font-weight:600; }
+  .mini-heart { background:none; border:none; font-size:20px; cursor:pointer; padding:4px; }
+  .mini-play { background:#fff; border:none; width:38px; height:38px; border-radius:50%; font-size:16px; cursor:pointer; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
 
-  /* Admin Panel */
-  .admin-panel { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:#0D0B14; z-index:999; overflow-y:auto; padding:20px; max-width:430px; margin:0 auto; }
+  /* BOTTOM NAV */
+  .bottom-nav { display:flex; background:#0D0B14; border-top:1px solid #1A1625; padding:6px 0 10px; flex-shrink:0; }
+  .nav-item { flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; padding:6px 4px; cursor:pointer; border:none; background:none; color:#6B7280; transition:color 0.2s; }
+  .nav-item.active { color:#22C55E; }
+  .nav-icon { font-size:22px; line-height:1; }
+  .nav-label { font-size:10px; font-weight:700; letter-spacing:0.5px; }
+
+  /* ADMIN PANEL */
+  .admin-panel { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:#0D0B14; z-index:999; overflow-y:auto; max-width:430px; margin:0 auto; }
   .admin-panel.show { display:block; }
-  .admin-header { display:flex; align-items:center; gap:12px; margin-bottom:24px; }
-  .admin-title { font-size:24px; font-weight:900; }
-  .close-btn { background:#1A1625; border:none; color:#fff; border-radius:12px; padding:8px 16px; cursor:pointer; font-size:14px; }
-  .input-group { margin-bottom:16px; }
-  .input-label { color:#6B7280; font-size:12px; font-weight:600; letter-spacing:1px; margin-bottom:6px; display:block; }
+  .admin-inner { padding:20px; padding-bottom:40px; }
+  .admin-header { display:flex; align-items:center; gap:12px; margin-bottom:8px; }
+  .admin-title { font-size:22px; font-weight:900; }
+  .close-btn { background:#1A1625; border:none; color:#fff; border-radius:12px; padding:8px 14px; cursor:pointer; font-size:14px; }
+  .admin-sub { color:#6B7280; font-size:13px; margin-bottom:24px; }
+  .input-group { margin-bottom:14px; }
+  .input-label { color:#6B7280; font-size:11px; font-weight:700; letter-spacing:1px; margin-bottom:6px; display:block; }
   .input-field { width:100%; background:#1A1625; border:none; border-radius:12px; padding:14px; color:#fff; font-size:14px; outline:none; }
-  .upload-btn { width:100%; background:#1A1625; border:2px dashed #2D2B3A; border-radius:12px; padding:20px; color:#6B7280; font-size:14px; cursor:pointer; margin-bottom:16px; text-align:center; }
-  .submit-btn { width:100%; background:#22C55E; border:none; border-radius:25px; padding:16px; color:#000; font-weight:900; font-size:16px; cursor:pointer; margin-top:8px; }
-  .submit-btn:disabled { background:#1A1625; color:#6B7280; }
-  .status-msg { text-align:center; padding:12px; border-radius:12px; margin-top:12px; font-weight:600; }
+  .input-field::placeholder { color:#4B5563; }
+  .file-upload-box { width:100%; background:#1A1625; border:2px dashed #2D2B3A; border-radius:12px; padding:20px; color:#6B7280; font-size:14px; cursor:pointer; margin-bottom:4px; text-align:center; position:relative; transition:border-color 0.2s; }
+  .file-upload-box:hover { border-color:#22C55E; }
+  .file-upload-box input[type=file] { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; }
+  .file-selected { color:#22C55E; font-size:12px; margin-top:4px; margin-bottom:10px; font-weight:600; }
+  .upload-progress { background:#1A1625; border-radius:12px; padding:12px 16px; margin-bottom:14px; display:none; }
+  .upload-progress.show { display:block; }
+  .progress-label { color:#6B7280; font-size:12px; margin-bottom:6px; }
+  .progress-track { height:4px; background:#2D2B3A; border-radius:2px; }
+  .progress-bar-upload { height:4px; background:#22C55E; border-radius:2px; width:0%; transition:width 0.3s; }
+  .submit-btn { width:100%; background:#22C55E; border:none; border-radius:25px; padding:16px; color:#000; font-weight:900; font-size:16px; cursor:pointer; margin-top:8px; transition:opacity 0.2s; }
+  .submit-btn:disabled { opacity:0.4; cursor:not-allowed; }
+  .status-msg { text-align:center; padding:12px; border-radius:12px; margin-top:12px; font-weight:600; font-size:14px; display:none; }
+  .status-msg.show { display:block; }
   .status-msg.success { background:#14532d; color:#22C55E; }
   .status-msg.error { background:#450a0a; color:#ef4444; }
+
+  /* PASSWORD GATE */
+  .pw-gate { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:998; align-items:center; justify-content:center; max-width:430px; margin:0 auto; }
+  .pw-gate.show { display:flex; }
+  .pw-box { background:#1A1625; border-radius:20px; padding:30px; width:90%; }
+  .pw-title { font-size:20px; font-weight:900; margin-bottom:6px; }
+  .pw-sub { color:#6B7280; font-size:13px; margin-bottom:20px; }
+  .pw-input { width:100%; background:#0D0B14; border:none; border-radius:12px; padding:14px; color:#fff; font-size:16px; outline:none; margin-bottom:12px; letter-spacing:4px; text-align:center; }
+  .pw-btn { width:100%; background:#22C55E; border:none; border-radius:12px; padding:14px; color:#000; font-weight:900; font-size:15px; cursor:pointer; }
+  .pw-cancel { width:100%; background:none; border:none; color:#6B7280; padding:10px; cursor:pointer; margin-top:6px; font-size:14px; }
+  .pw-error { color:#ef4444; font-size:13px; text-align:center; margin-top:8px; display:none; }
 </style>
 </head>
 <body>
@@ -105,157 +154,193 @@
   <span class="app-name">PULSE</span>
   <div class="dot"></div>
   <span class="online">SYSTEM ONLINE</span>
-  <span style="margin-left:auto;font-size:20px;cursor:pointer;" onclick="openAdmin()">⚙️</span>
+  <button class="gear-btn" onclick="askAdminPassword()">⚙️</button>
 </div>
 
-<!-- VAULT Screen -->
-<div class="screen active" id="screen-vault">
-  <div class="hero-card">
-    <div class="hero-title">Your Sanctuary.</div>
-    <div class="hero-sub" id="hero-sub">0 TRACKS • 0 PLAYLISTS</div>
-  </div>
-  <div class="tab-row">
-    <button class="tab-btn active" onclick="switchTab('library',this)">LIBRARY</button>
-    <button class="tab-btn" onclick="switchTab('nowplaying',this)">NOW PLAYING</button>
-  </div>
-  <div id="tab-library">
-    <div class="action-row">
-      <button class="add-btn" onclick="openAdmin()">+ ADD</button>
-      <button class="list-btn">≡ LIST</button>
-    </div>
-    <div class="song-list" id="song-list">
-      <div class="empty-card">No songs yet. Tap + ADD to add songs.</div>
-    </div>
-  </div>
-  <div id="tab-nowplaying" style="display:none;">
-    <div id="now-playing-content">
-      <div class="empty-card">No song selected. Tap a song to play.</div>
-    </div>
-  </div>
-</div>
+<!-- Screens -->
+<div class="screens">
 
-<!-- FAVS Screen -->
-<div class="screen" id="screen-favs">
-  <div class="page-title">Your Favorites</div>
-  <div class="empty-card" id="favs-list">No favorites yet.</div>
-</div>
-
-<!-- LISTS Screen -->
-<div class="screen" id="screen-lists">
-  <div class="page-title">Playlists</div>
-  <div style="display:flex;gap:12px;margin-bottom:16px;">
-    <button class="add-btn" style="flex:none;padding:12px 20px;">🎵 SPOTIFY SYNC</button>
-    <button class="list-btn" style="flex:none;padding:12px 20px;">NEW LIST</button>
-  </div>
-  <div class="playlist-card">
-    <div class="playlist-cover"></div>
-    <div class="playlist-name">ENGLISH</div>
-    <div class="playlist-count" id="playlist-count">0 TRACKS</div>
-  </div>
-</div>
-
-<!-- ME Screen -->
-<div class="screen" id="screen-me">
-  <div class="profile-card">
-    <div class="profile-icon">👤</div>
-    <div>
-      <div class="profile-name">Premium Owner</div>
-      <div class="profile-role">SONIC ARCHITECT</div>
+  <!-- VAULT -->
+  <div class="screen active" id="screen-vault">
+    <div class="hero-card">
+      <div class="hero-title">Your Sanctuary.</div>
+      <div class="hero-sub" id="hero-sub">0 TRACKS • 0 PLAYLISTS</div>
     </div>
-  </div>
-  <div class="info-card">
-    <div class="info-section">INTELLIGENCE</div>
-    <div class="info-grid">
-      <div class="info-box">
-        <div style="color:#7C3AED;font-size:20px;">✦</div>
-        <div class="info-label">NEURAL VISUALS</div>
-        <div class="info-value">Enabled</div>
+    <div class="tab-row">
+      <button class="tab-btn active" id="tab-lib-btn" onclick="switchTab('library')">LIBRARY</button>
+      <button class="tab-btn" id="tab-now-btn" onclick="switchTab('nowplaying')">NOW PLAYING</button>
+    </div>
+    <div id="tab-library">
+      <div class="action-row">
+        <button class="add-btn" onclick="askAdminPassword()">+ ADD</button>
+        <button class="list-btn">≡ LIST</button>
       </div>
-      <div class="info-box">
-        <div style="color:#7C3AED;font-size:20px;">✦</div>
-        <div class="info-label">ART GEN</div>
-        <div class="info-value">Unlimited</div>
+      <div class="song-list" id="song-list">
+        <div class="empty-card">No songs yet.<br>Tap + ADD to add songs.</div>
       </div>
     </div>
-    <div class="info-section">PERFORMANCE</div>
-    <div class="perf-row">
-      <span class="info-label">Audio Quality</span>
-      <span class="perf-val">EXOTIC 32-BIT</span>
-    </div>
-    <div class="perf-row">
-      <span class="info-label">Local Cache</span>
-      <span class="perf-val green" id="cache-count">0 TRACKS</span>
+    <div id="tab-nowplaying" style="display:none;">
+      <div id="now-playing-content">
+        <div class="empty-card">No song selected.<br>Tap a song to play.</div>
+      </div>
     </div>
   </div>
+
+  <!-- FAVS -->
+  <div class="screen" id="screen-favs">
+    <div class="page-title">Your Favorites</div>
+    <div id="favs-container">
+      <div class="empty-card">No favorites yet.<br>Tap ♡ on any song.</div>
+    </div>
+  </div>
+
+  <!-- LISTS -->
+  <div class="screen" id="screen-lists">
+    <div class="page-title">Playlists</div>
+    <div class="lists-actions">
+      <button class="spotify-btn">🎵 SPOTIFY SYNC</button>
+      <button class="new-list-btn">NEW LIST</button>
+    </div>
+    <div class="playlist-card">
+      <div class="playlist-cover"></div>
+      <div class="playlist-name">ENGLISH</div>
+      <div class="playlist-count" id="playlist-count">0 TRACKS</div>
+    </div>
+  </div>
+
+  <!-- ME -->
+  <div class="screen" id="screen-me">
+    <div class="profile-card">
+      <div class="profile-icon">👤</div>
+      <div>
+        <div class="profile-name">Premium Owner</div>
+        <div class="profile-role">SONIC ARCHITECT</div>
+      </div>
+    </div>
+    <div class="info-card">
+      <div class="info-section">INTELLIGENCE</div>
+      <div class="info-grid">
+        <div class="info-box">
+          <div style="color:#7C3AED;font-size:20px;">✦</div>
+          <div class="info-label">NEURAL VISUALS</div>
+          <div class="info-value">Enabled</div>
+        </div>
+        <div class="info-box">
+          <div style="color:#7C3AED;font-size:20px;">✦</div>
+          <div class="info-label">ART GEN</div>
+          <div class="info-value">Unlimited</div>
+        </div>
+      </div>
+      <div class="info-section">PERFORMANCE</div>
+      <div class="perf-row">
+        <span class="info-label">Audio Quality</span>
+        <span class="perf-val">EXOTIC 32-BIT</span>
+      </div>
+      <div class="perf-row">
+        <span class="info-label">Local Cache</span>
+        <span class="perf-val green" id="cache-count">0 TRACKS</span>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <!-- Mini Player -->
-<div class="mini-player" id="mini-player" onclick="showNowPlaying()">
-  <div class="mini-cover" id="mini-cover" style="background:#1A1A1A;font-size:20px;">♪</div>
-  <div class="mini-info">
+<div class="mini-player" id="mini-player">
+  <div class="mini-cover" id="mini-cover">♪</div>
+  <div class="mini-info" onclick="showNowPlaying()">
     <div class="mini-title" id="mini-title">-</div>
     <div class="mini-artist" id="mini-artist">-</div>
   </div>
-  <button class="mini-play" id="mini-play-btn" onclick="event.stopPropagation();togglePlay()">▶</button>
+  <button class="mini-heart" id="mini-heart" onclick="toggleFavCurrent()">🤍</button>
+  <button class="mini-play" id="mini-play-btn" onclick="togglePlay()">▶</button>
 </div>
 
 <!-- Bottom Nav -->
 <div class="bottom-nav">
-  <button class="nav-item active" onclick="showScreen('vault',this)">
+  <button class="nav-item active" id="nav-vault" onclick="showScreen('vault')">
     <span class="nav-icon">⊞</span>
     <span class="nav-label">VAULT</span>
   </button>
-  <button class="nav-item" onclick="showScreen('favs',this)">
+  <button class="nav-item" id="nav-favs" onclick="showScreen('favs')">
     <span class="nav-icon">♡</span>
     <span class="nav-label">FAVS</span>
   </button>
-  <button class="nav-item" onclick="showScreen('lists',this)">
+  <button class="nav-item" id="nav-lists" onclick="showScreen('lists')">
     <span class="nav-icon">≡</span>
     <span class="nav-label">LISTS</span>
   </button>
-  <button class="nav-item" onclick="showScreen('me',this)">
+  <button class="nav-item" id="nav-me" onclick="showScreen('me')">
     <span class="nav-icon">◯</span>
     <span class="nav-label">ME</span>
   </button>
 </div>
 
+<!-- Password Gate -->
+<div class="pw-gate" id="pw-gate">
+  <div class="pw-box">
+    <div class="pw-title">🔐 Admin Access</div>
+    <div class="pw-sub">Enter admin password to continue</div>
+    <input class="pw-input" type="password" id="pw-input" placeholder="••••" maxlength="20" onkeydown="if(event.key==='Enter')checkPassword()" />
+    <button class="pw-btn" onclick="checkPassword()">UNLOCK</button>
+    <button class="pw-cancel" onclick="closePwGate()">Cancel</button>
+    <div class="pw-error" id="pw-error">Wrong password. Try again.</div>
+  </div>
+</div>
+
 <!-- Admin Panel -->
 <div class="admin-panel" id="admin-panel">
-  <div class="admin-header">
-    <button class="close-btn" onclick="closeAdmin()">✕ Close</button>
-    <div class="admin-title">Add Song</div>
+  <div class="admin-inner">
+    <div class="admin-header">
+      <button class="close-btn" onclick="closeAdmin()">✕ Close</button>
+      <div class="admin-title">Add Song</div>
+    </div>
+    <div class="admin-sub">Upload from your phone + fill details</div>
+
+    <div class="input-group">
+      <label class="input-label">SONG TITLE *</label>
+      <input class="input-field" id="inp-title" placeholder="e.g. Company" />
+    </div>
+    <div class="input-group">
+      <label class="input-label">ARTIST *</label>
+      <input class="input-field" id="inp-artist" placeholder="e.g. Justin Bieber" />
+    </div>
+    <div class="input-group">
+      <label class="input-label">ALBUM</label>
+      <input class="input-field" id="inp-album" placeholder="e.g. Purpose" />
+    </div>
+    <div class="input-group">
+      <label class="input-label">DURATION</label>
+      <input class="input-field" id="inp-duration" placeholder="e.g. 3:27" />
+    </div>
+
+    <label class="input-label">AUDIO FILE (MP3) *</label>
+    <div class="file-upload-box">
+      📁 Tap to pick MP3 from phone
+      <input type="file" accept="audio/*" id="audio-file" onchange="fileSelected('audio-file','audio-name')" />
+    </div>
+    <div class="file-selected" id="audio-name"></div>
+
+    <label class="input-label">COVER IMAGE (optional)</label>
+    <div class="file-upload-box">
+      🖼️ Tap to pick cover photo
+      <input type="file" accept="image/*" id="cover-file" onchange="fileSelected('cover-file','cover-name')" />
+    </div>
+    <div class="file-selected" id="cover-name"></div>
+
+    <div class="upload-progress" id="upload-progress">
+      <div class="progress-label" id="progress-label">Uploading audio...</div>
+      <div class="progress-track"><div class="progress-bar-upload" id="progress-bar-upload"></div></div>
+    </div>
+
+    <button class="submit-btn" onclick="addSong()" id="submit-btn">ADD TO PULSE</button>
+    <div class="status-msg" id="status-msg"></div>
   </div>
-  <div class="input-group">
-    <label class="input-label">SONG TITLE *</label>
-    <input class="input-field" id="inp-title" placeholder="e.g. Company" />
-  </div>
-  <div class="input-group">
-    <label class="input-label">ARTIST *</label>
-    <input class="input-field" id="inp-artist" placeholder="e.g. Justin Bieber" />
-  </div>
-  <div class="input-group">
-    <label class="input-label">ALBUM</label>
-    <input class="input-field" id="inp-album" placeholder="e.g. Purpose" />
-  </div>
-  <div class="input-group">
-    <label class="input-label">AUDIO URL (MP3 link) *</label>
-    <input class="input-field" id="inp-audio" placeholder="https://..." />
-  </div>
-  <div class="input-group">
-    <label class="input-label">COVER IMAGE URL</label>
-    <input class="input-field" id="inp-cover" placeholder="https://..." />
-  </div>
-  <div class="input-group">
-    <label class="input-label">DURATION</label>
-    <input class="input-field" id="inp-duration" placeholder="e.g. 3:27" />
-  </div>
-  <button class="submit-btn" onclick="addSong()" id="submit-btn">ADD TO PULSE</button>
-  <div id="status-msg"></div>
 </div>
 
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-import { getFirestore, collection, getDocs, addDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { getFirestore, collection, addDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
 const firebaseConfig = {
   apiKey: "AIzaSyAgPBIuenXhDyyfokqmTga-K9VyQWk-bRA",
@@ -266,66 +351,97 @@ const firebaseConfig = {
   appId: "1:711521430114:web:75ce5e10aa5dd821457f3b"
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+const fbApp = initializeApp(firebaseConfig);
+const db = getFirestore(fbApp);
 
+// ---- CLOUDINARY CONFIG (free file uploads) ----
+const CLOUD_NAME = 'YOUR_CLOUDINARY_CLOUD_NAME'; // <-- fill this after Cloudinary signup
+const UPLOAD_PRESET = 'pulse_upload';             // <-- fill this after Cloudinary setup
+
+window.uploadToCloudinary = async function(file, type, onProgress) {
+  const url = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/${type}/upload`;
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('upload_preset', UPLOAD_PRESET);
+
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', url);
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 100));
+    };
+    xhr.onload = () => {
+      const res = JSON.parse(xhr.responseText);
+      if (res.secure_url) resolve(res.secure_url);
+      else reject(new Error('Upload failed'));
+    };
+    xhr.onerror = () => reject(new Error('Network error'));
+    xhr.send(formData);
+  });
+};
+
+// ---- STATE ----
 let songs = [];
 let currentSong = null;
 let audio = new Audio();
 let isPlaying = false;
-let favorites = JSON.parse(localStorage.getItem('favs') || '[]');
+let favorites = JSON.parse(localStorage.getItem('pulse_favs') || '[]');
 
-// Load songs from Firestore realtime
+// ---- LOAD SONGS ----
 onSnapshot(collection(db, 'songs'), (snapshot) => {
   songs = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
   renderSongs();
+  renderFavs();
   updateCounts();
 });
 
+// ---- RENDER SONGS ----
 window.renderSongs = function() {
   const list = document.getElementById('song-list');
-  if (songs.length === 0) {
-    list.innerHTML = '<div class="empty-card">No songs yet. Tap + ADD to add songs.</div>';
+  if (!songs.length) {
+    list.innerHTML = '<div class="empty-card">No songs yet.<br>Tap + ADD to add songs.</div>';
     return;
   }
   list.innerHTML = songs.map((s, i) => `
     <div class="song-tile ${currentSong?.id === s.id ? 'playing' : ''}" onclick="playSong('${s.id}')">
-      <div class="song-cover" style="background:${s.coverUrl ? 'url('+s.coverUrl+') center/cover' : getColor(i)}">
+      <div class="song-cover" style="${s.coverUrl ? `background-image:url(${s.coverUrl})` : `background:${getColor(i)}`}">
         ${s.coverUrl ? '' : '♪'}
       </div>
       <div class="song-info">
         <div class="song-title ${currentSong?.id === s.id ? 'green' : ''}">${s.title}</div>
-        <div class="song-artist">${s.artist} • ${s.album || ''}</div>
+        <div class="song-artist">${s.artist}${s.album ? ' • ' + s.album : ''}</div>
       </div>
-      <div class="song-dur">${s.duration || ''}</div>
+      <span class="song-dur">${s.duration || ''}</span>
     </div>
   `).join('');
-}
+};
 
-window.getColor = function(i) {
-  const colors = ['#1A1A2E','#16213E','#0F3460','#533483','#2D132C'];
-  return colors[i % colors.length];
-}
+window.getColor = (i) => ['#1A1A2E','#16213E','#0F3460','#533483','#2D132C'][i % 5];
 
+// ---- PLAY ----
 window.playSong = function(id) {
   const song = songs.find(s => s.id === id);
   if (!song) return;
   currentSong = song;
   audio.src = song.audioUrl;
-  audio.play();
+  audio.play().catch(()=>{});
   isPlaying = true;
   updateMiniPlayer();
   renderSongs();
   renderNowPlaying();
-}
+};
 
 window.togglePlay = function() {
   if (!currentSong) return;
   if (isPlaying) { audio.pause(); isPlaying = false; }
-  else { audio.play(); isPlaying = true; }
+  else { audio.play().catch(()=>{}); isPlaying = true; }
+  updatePlayButtons();
+};
+
+function updatePlayButtons() {
   document.getElementById('mini-play-btn').textContent = isPlaying ? '⏸' : '▶';
-  const playBtn = document.getElementById('play-btn-main');
-  if (playBtn) playBtn.textContent = isPlaying ? '⏸' : '▶';
+  const pb = document.getElementById('play-btn-main');
+  if (pb) pb.textContent = isPlaying ? '⏸' : '▶';
 }
 
 window.updateMiniPlayer = function() {
@@ -340,28 +456,39 @@ window.updateMiniPlayer = function() {
     mc.style.backgroundSize = 'cover';
     mc.textContent = '';
   } else {
+    mc.style.backgroundImage = '';
     mc.textContent = '♪';
   }
+  updateHeartBtn();
+};
+
+function updateHeartBtn() {
+  if (!currentSong) return;
+  document.getElementById('mini-heart').textContent = favorites.includes(currentSong.id) ? '❤️' : '🤍';
 }
 
+// ---- NOW PLAYING ----
 window.renderNowPlaying = function() {
   if (!currentSong) return;
   const isFav = favorites.includes(currentSong.id);
   document.getElementById('now-playing-content').innerHTML = `
-    <div class="now-playing-full">
-      <div class="big-cover" style="background:${currentSong.coverUrl ? 'url('+currentSong.coverUrl+') center/cover' : '#1A1A2E'}">
-        ${currentSong.coverUrl ? '' : '<span style="font-size:60px">♪</span>'}
-        <button class="fav-btn-cover" onclick="toggleFav('${currentSong.id}')">${isFav ? '❤️' : '🤍'}</button>
-        <div class="now-title">${currentSong.title}</div>
-        <div class="now-artist">${currentSong.artist}</div>
+    <div class="now-wrap">
+      <div class="big-cover" style="${currentSong.coverUrl ? `background-image:url(${currentSong.coverUrl})` : `background:#1A1A2E`}">
+        <div class="big-cover-overlay"></div>
+        ${!currentSong.coverUrl ? '<span class="big-cover-icon">♪</span>' : ''}
+        <button class="fav-btn-cover" onclick="toggleFavCurrent()">${isFav ? '❤️' : '🤍'}</button>
+        <div class="now-info">
+          <div class="now-title">${currentSong.title}</div>
+          <div class="now-artist">${currentSong.artist}</div>
+        </div>
       </div>
       <div class="player-box">
-        <div class="progress-bar" onclick="seek(event)">
+        <div class="progress-bar" id="prog-bar" onclick="seekAudio(event)">
           <div class="progress-fill" id="progress-fill"></div>
         </div>
         <div class="time-row">
           <span id="time-cur">0:00</span>
-          <span>${currentSong.duration || '0:00'}</span>
+          <span id="time-total">${currentSong.duration || '0:00'}</span>
         </div>
         <div class="ctrl-row">
           <button class="ctrl-btn">⇄</button>
@@ -372,74 +499,31 @@ window.renderNowPlaying = function() {
         </div>
         <div class="vol-row">
           <span class="vol-icon">🔊</span>
-          <input type="range" class="vol-slider" min="0" max="1" step="0.01" value="0.8" oninput="setVol(this.value)">
+          <input type="range" min="0" max="1" step="0.01" value="${audio.volume}" oninput="audio.volume=this.value">
         </div>
       </div>
     </div>
   `;
-}
+};
 
-window.seek = function(e) {
+window.seekAudio = function(e) {
   if (!audio.duration) return;
-  const bar = e.currentTarget;
-  const pct = e.offsetX / bar.offsetWidth;
+  const pct = e.offsetX / e.currentTarget.offsetWidth;
   audio.currentTime = pct * audio.duration;
-}
-
-window.setVol = function(v) { audio.volume = v; }
+};
 
 window.prevSong = function() {
-  if (!currentSong || songs.length === 0) return;
-  const idx = songs.findIndex(s => s.id === currentSong.id);
-  const prev = songs[(idx - 1 + songs.length) % songs.length];
-  playSong(prev.id);
-}
+  if (!songs.length) return;
+  const idx = songs.findIndex(s => s.id === currentSong?.id);
+  playSong(songs[(idx - 1 + songs.length) % songs.length].id);
+};
 
 window.nextSong = function() {
-  if (!currentSong || songs.length === 0) return;
-  const idx = songs.findIndex(s => s.id === currentSong.id);
-  const next = songs[(idx + 1) % songs.length];
-  playSong(next.id);
-}
+  if (!songs.length) return;
+  const idx = songs.findIndex(s => s.id === currentSong?.id);
+  playSong(songs[(idx + 1) % songs.length].id);
+};
 
-window.toggleFav = function(id) {
-  if (favorites.includes(id)) {
-    favorites = favorites.filter(f => f !== id);
-  } else {
-    favorites.push(id);
-  }
-  localStorage.setItem('favs', JSON.stringify(favorites));
-  renderNowPlaying();
-  renderFavs();
-}
-
-window.renderFavs = function() {
-  const favSongs = songs.filter(s => favorites.includes(s.id));
-  const el = document.getElementById('favs-list');
-  if (favSongs.length === 0) {
-    el.innerHTML = 'No favorites yet.';
-    el.className = 'empty-card';
-    return;
-  }
-  el.className = 'song-list';
-  el.innerHTML = favSongs.map((s, i) => `
-    <div class="song-tile" onclick="playSong('${s.id}')">
-      <div class="song-cover" style="background:${getColor(i)}">${s.coverUrl ? '' : '♪'}</div>
-      <div class="song-info">
-        <div class="song-title">${s.title}</div>
-        <div class="song-artist">${s.artist}</div>
-      </div>
-    </div>
-  `).join('');
-}
-
-window.updateCounts = function() {
-  document.getElementById('hero-sub').textContent = `${songs.length} TRACKS • 1 PLAYLISTS`;
-  document.getElementById('playlist-count').textContent = `${songs.length} TRACKS`;
-  document.getElementById('cache-count').textContent = `${songs.length} TRACKS`;
-}
-
-// Audio progress
 audio.addEventListener('timeupdate', () => {
   if (!audio.duration) return;
   const pct = (audio.currentTime / audio.duration) * 100;
@@ -448,79 +532,184 @@ audio.addEventListener('timeupdate', () => {
   const cur = document.getElementById('time-cur');
   if (cur) {
     const m = Math.floor(audio.currentTime / 60);
-    const s = Math.floor(audio.currentTime % 60).toString().padStart(2, '0');
+    const s = Math.floor(audio.currentTime % 60).toString().padStart(2,'0');
     cur.textContent = `${m}:${s}`;
   }
 });
+audio.addEventListener('ended', () => { isPlaying = false; nextSong(); });
 
-audio.addEventListener('ended', () => nextSong());
+// ---- FAVORITES ----
+window.toggleFavCurrent = function() {
+  if (!currentSong) return;
+  toggleFav(currentSong.id);
+  renderNowPlaying();
+  updateHeartBtn();
+};
 
-// Admin
-window.openAdmin = function() {
-  document.getElementById('admin-panel').classList.add('show');
-}
-window.closeAdmin = function() {
-  document.getElementById('admin-panel').classList.remove('show');
-}
+window.toggleFav = function(id) {
+  if (favorites.includes(id)) favorites = favorites.filter(f => f !== id);
+  else favorites.push(id);
+  localStorage.setItem('pulse_favs', JSON.stringify(favorites));
+  renderFavs();
+};
 
+window.renderFavs = function() {
+  const favSongs = songs.filter(s => favorites.includes(s.id));
+  const el = document.getElementById('favs-container');
+  if (!favSongs.length) {
+    el.innerHTML = '<div class="empty-card">No favorites yet.<br>Tap ♡ on any song.</div>';
+    return;
+  }
+  el.innerHTML = '<div class="song-list">' + favSongs.map((s, i) => `
+    <div class="song-tile" onclick="playSong('${s.id}')">
+      <div class="song-cover" style="${s.coverUrl ? `background-image:url(${s.coverUrl})` : `background:${getColor(i)}`}">
+        ${s.coverUrl ? '' : '♪'}
+      </div>
+      <div class="song-info">
+        <div class="song-title">${s.title}</div>
+        <div class="song-artist">${s.artist}</div>
+      </div>
+    </div>
+  `).join('') + '</div>';
+};
+
+window.updateCounts = function() {
+  document.getElementById('hero-sub').textContent = `${songs.length} TRACKS • 1 PLAYLISTS`;
+  document.getElementById('playlist-count').textContent = `${songs.length} TRACKS`;
+  document.getElementById('cache-count').textContent = `${songs.length} TRACKS`;
+};
+
+// ---- ADD SONG ----
 window.addSong = async function() {
   const title = document.getElementById('inp-title').value.trim();
   const artist = document.getElementById('inp-artist').value.trim();
-  const audioUrl = document.getElementById('inp-audio').value.trim();
-  if (!title || !artist || !audioUrl) {
-    showStatus('Please fill Title, Artist and Audio URL!', 'error');
-    return;
-  }
+  const audioFileEl = document.getElementById('audio-file');
+
+  if (!title || !artist) { showStatus('Fill Title and Artist!', 'error'); return; }
+  if (!audioFileEl.files[0]) { showStatus('Pick an MP3 file!', 'error'); return; }
+
   const btn = document.getElementById('submit-btn');
   btn.disabled = true;
-  btn.textContent = 'Adding...';
+  btn.textContent = 'Uploading...';
+
+  const prog = document.getElementById('upload-progress');
+  const progBar = document.getElementById('progress-bar-upload');
+  const progLabel = document.getElementById('progress-label');
+  prog.classList.add('show');
+
   try {
+    progLabel.textContent = 'Uploading audio...';
+    const audioUrl = await uploadToCloudinary(audioFileEl.files[0], 'video', (p) => {
+      progBar.style.width = p + '%';
+      progLabel.textContent = `Uploading audio... ${p}%`;
+    });
+
+    let coverUrl = '';
+    const coverFileEl = document.getElementById('cover-file');
+    if (coverFileEl.files[0]) {
+      progLabel.textContent = 'Uploading cover...';
+      progBar.style.width = '0%';
+      coverUrl = await uploadToCloudinary(coverFileEl.files[0], 'image', (p) => {
+        progBar.style.width = p + '%';
+        progLabel.textContent = `Uploading cover... ${p}%`;
+      });
+    }
+
     await addDoc(collection(db, 'songs'), {
       title,
       artist,
       album: document.getElementById('inp-album').value.trim(),
-      audioUrl,
-      coverUrl: document.getElementById('inp-cover').value.trim(),
       duration: document.getElementById('inp-duration').value.trim(),
+      audioUrl,
+      coverUrl,
       addedAt: new Date()
     });
+
     showStatus('✅ Song added to Pulse!', 'success');
-    ['inp-title','inp-artist','inp-album','inp-audio','inp-cover','inp-duration'].forEach(id => {
-      document.getElementById(id).value = '';
-    });
+    ['inp-title','inp-artist','inp-album','inp-duration'].forEach(id => document.getElementById(id).value = '');
+    audioFileEl.value = '';
+    document.getElementById('cover-file').value = '';
+    document.getElementById('audio-name').textContent = '';
+    document.getElementById('cover-name').textContent = '';
+
   } catch(e) {
-    showStatus('❌ Error: ' + e.message, 'error');
+    showStatus('❌ ' + e.message, 'error');
   }
+
+  prog.classList.remove('show');
+  progBar.style.width = '0%';
   btn.disabled = false;
   btn.textContent = 'ADD TO PULSE';
-}
+};
 
 window.showStatus = function(msg, type) {
   const el = document.getElementById('status-msg');
   el.textContent = msg;
-  el.className = 'status-msg ' + type;
-  setTimeout(() => el.textContent = '', 3000);
-}
+  el.className = 'status-msg show ' + type;
+  setTimeout(() => { el.className = 'status-msg'; }, 3000);
+};
+
 </script>
 
 <script>
-function showScreen(name, el) {
+// ---- NAVIGATION ----
+const ADMIN_PASSWORD = 'pulse2024'; // Change this to your password!
+
+function showScreen(name) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('screen-' + name).classList.add('active');
-  el.classList.add('active');
+  document.getElementById('nav-' + name).classList.add('active');
 }
 
-function switchTab(name, el) {
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  el.classList.add('active');
+function switchTab(name) {
+  document.getElementById('tab-lib-btn').classList.toggle('active', name === 'library');
+  document.getElementById('tab-now-btn').classList.toggle('active', name === 'nowplaying');
   document.getElementById('tab-library').style.display = name === 'library' ? 'block' : 'none';
   document.getElementById('tab-nowplaying').style.display = name === 'nowplaying' ? 'block' : 'none';
 }
 
 function showNowPlaying() {
-  showScreen('vault', document.querySelector('.nav-item'));
-  switchTab('nowplaying', document.querySelectorAll('.tab-btn')[1]);
+  showScreen('vault');
+  switchTab('nowplaying');
+}
+
+// ---- PASSWORD GATE ----
+let pendingAction = null;
+
+function askAdminPassword() {
+  document.getElementById('pw-gate').classList.add('show');
+  document.getElementById('pw-input').value = '';
+  document.getElementById('pw-error').style.display = 'none';
+  setTimeout(() => document.getElementById('pw-input').focus(), 100);
+}
+
+function closePwGate() {
+  document.getElementById('pw-gate').classList.remove('show');
+}
+
+function checkPassword() {
+  const val = document.getElementById('pw-input').value;
+  if (val === ADMIN_PASSWORD) {
+    closePwGate();
+    openAdmin();
+  } else {
+    document.getElementById('pw-error').style.display = 'block';
+    document.getElementById('pw-input').value = '';
+  }
+}
+
+function openAdmin() {
+  document.getElementById('admin-panel').classList.add('show');
+}
+
+function closeAdmin() {
+  document.getElementById('admin-panel').classList.remove('show');
+}
+
+function fileSelected(inputId, nameId) {
+  const file = document.getElementById(inputId).files[0];
+  document.getElementById(nameId).textContent = file ? '✅ ' + file.name : '';
 }
 </script>
 
