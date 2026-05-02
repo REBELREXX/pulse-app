@@ -492,21 +492,17 @@ input[type=range]{flex:1;accent-color:var(--green);cursor:pointer;height:3px;}
 
     <!-- LISTS -->
     <div class="screen" id="screen-lists">
-      <div class="pg-title">Playlists</div>
-      <div class="lists-top">
-        <button class="sp-btn">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
-          SPOTIFY SYNC
+      <div class="hero-card">
+        <div class="hero-title">Your<br>Playlists</div>
+        <div class="hero-sub">CURATED VIBES</div>
+      </div>
+      <div class="act-row">
+        <button class="btn-add" onclick="openPlModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Create Playlist
         </button>
-        <button class="nl-btn">NEW LIST</button>
       </div>
-      <div class="pl-card">
-        <div class="pl-cover"></div>
-        <div class="pl-info">
-          <div class="pl-name">ENGLISH</div>
-          <div class="pl-cnt" id="pl-cnt">0 TRACKS</div>
-        </div>
-      </div>
+      <div id="playlists-con"></div>
     </div>
 
     <!-- ME -->
@@ -638,9 +634,72 @@ input[type=range]{flex:1;accent-color:var(--green);cursor:pointer;height:3px;}
 
 <div class="toast" id="toast"></div>
 
+<!-- Playlist Modal -->
+<div class="adm" id="pl-modal">
+  <div class="adm-in">
+    <div class="adm-top">
+      <button class="back-btn" onclick="closePlModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        Back
+      </button>
+      <div class="adm-ttl" id="pl-modal-ttl">New Playlist</div>
+    </div>
+    <div class="ig"><label class="il">PLAYLIST NAME *</label><input class="if" id="pl-name-inp" placeholder="e.g. Late Night Vibes"></div>
+    <label class="il">COVER IMAGE (optional)</label>
+    <div class="fbox">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      Tap to pick cover photo
+      <input type="file" accept="image/*" id="pl-cf" onchange="fsel('pl-cf','pl-cn')">
+    </div>
+    <div class="fsel" id="pl-cn"></div>
+    <div class="uprog" id="pl-uprog">
+      <div class="ulbl" id="pl-ulbl">Uploading...</div>
+      <div class="utrack"><div class="ubar" id="pl-ubar"></div></div>
+    </div>
+    <button class="sub-btn" id="pl-sub-btn" onclick="savePlaylist()">SAVE PLAYLIST</button>
+    <button class="lo-btn-full" id="pl-del-btn" style="display:none; margin-top:12px; background:rgba(239,68,68,0.1); color:#ef4444; border:1px solid rgba(239,68,68,0.2);" onclick="deletePlaylist()">DELETE PLAYLIST</button>
+  </div>
+</div>
+
+<!-- Add to Playlist Sheet -->
+<div class="del-ov" id="atp-ov">
+  <div class="del-box" style="max-height:70vh; overflow-y:auto;">
+    <div class="del-ttl">Add to Playlist</div>
+    <div id="atp-list" style="display:flex; flex-direction:column; gap:8px; margin:16px 0;"></div>
+    <button class="del-no" onclick="closeAtp()">Cancel</button>
+  </div>
+</div>
+
+<!-- Playlist Detail Screen -->
+<div class="screen" id="screen-pl-detail" style="z-index:105; background:var(--bg);">
+  <div class="auth-header" style="padding:16px 0;">
+    <div class="auth-back" onclick="showSc('lists')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></div>
+    <div class="auth-title" id="pld-title">Playlist</div>
+    <button class="del-btn" style="margin-left:auto; width:36px; height:36px; background:var(--card); border:1px solid var(--border); border-radius:10px;" onclick="openPlModal(true)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+    </button>
+  </div>
+  <div class="hero-card" id="pld-hero" style="height:200px; display:flex; flex-direction:column; justify-content:flex-end; background-size:cover; background-position:center; position:relative;">
+    <div style="position:absolute; inset:0; background:linear-gradient(to top, rgba(0,0,0,0.8), transparent); z-index:1;"></div>
+    <div class="hero-title" id="pld-name" style="position:relative; z-index:2; text-shadow: 0 2px 10px rgba(0,0,0,0.8);">Playlist Name</div>
+    <div class="hero-sub" id="pld-meta" style="position:relative; z-index:2; text-shadow: 0 1px 5px rgba(0,0,0,0.8);">0 TRACKS</div>
+  </div>
+  <div class="act-row" style="margin-top:16px;">
+    <button class="btn-add" onclick="playPlaylist(false)">
+      <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      Play All
+    </button>
+    <button class="btn-list" onclick="playPlaylist(true)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/></svg>
+      Shuffle
+    </button>
+  </div>
+  <div id="pld-songs" class="song-list" style="margin-top:16px;"></div>
+</div>
+
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-import { getFirestore,collection,addDoc,deleteDoc,doc,onSnapshot } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { getFirestore,collection,addDoc,deleteDoc,doc,onSnapshot,updateDoc,arrayUnion,arrayRemove } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 import { getAuth,signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithPopup,GoogleAuthProvider,signOut,onAuthStateChanged,updateProfile } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 
 const fbApp = initializeApp({
@@ -658,6 +717,7 @@ const CLD='dfjksclcg', PRE='pulse_upload';
 
 let songs=[],cur=null,playing=false,isAdmin=false,delId=null,currentUser=null;
 let favs=JSON.parse(localStorage.getItem('pf')||'[]');
+let playlists=[], currentPlId=null, atpSongId=null;
 const aud=new Audio();
 const P=`<polygon points="5 3 19 12 5 21 5 3"/>`;
 const PA=`<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>`;
@@ -807,6 +867,13 @@ function hideErr(id){const el=document.getElementById(id);el.style.display='none
 onSnapshot(collection(db,'songs'),snap=>{
   songs=snap.docs.map(d=>({id:d.id,...d.data()}));
   renderSongs();renderFavs();updateCounts();
+  if(currentPlId) renderPlDetail(currentPlId);
+});
+
+onSnapshot(collection(db,'playlists'),snap=>{
+  playlists=snap.docs.map(d=>({id:d.id,...d.data()}));
+  renderPlaylists();
+  if(currentPlId) renderPlDetail(currentPlId);
 });
 
 window.renderSongs=(list=songs)=>{
@@ -822,6 +889,9 @@ window.renderSongs=(list=songs)=>{
         <div class="smeta">${s.artist}${s.album?' &bull; '+s.album:''}</div>
       </div>
       <span class="sdur">${s.duration||''}</span>
+      <button class="del-btn" onclick="event.stopPropagation();openAtp('${s.id}')" style="color:var(--white); opacity:0.6;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
       ${isAdmin?`<button class="del-btn" onclick="event.stopPropagation();askDel('${s.id}','${s.title.replace(/'/g,"\\'")}')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
       </button>`:''}
@@ -934,9 +1004,232 @@ window.renderFavs=()=>{
 };
 
 window.updateCounts=()=>{
-  document.getElementById('hero-sub').textContent=`${songs.length} TRACKS \u2022 1 PLAYLISTS`;
-  document.getElementById('pl-cnt').textContent=`${songs.length} TRACKS`;
+  document.getElementById('hero-sub').textContent=`${songs.length} TRACKS \u2022 ${playlists.length} PLAYLISTS`;
   document.getElementById('cache-cnt').textContent=`${songs.length} TRACKS`;
+};
+
+// ===== PLAYLIST LOGIC =====
+window.renderPlaylists = () => {
+  const el = document.getElementById('playlists-con');
+  if(!playlists.length) { el.innerHTML = '<div class="empty">No playlists yet.</div>'; return; }
+  el.innerHTML = playlists.map((p, i) => `
+    <div class="pl-card" onclick="openPlDetail('${p.id}')" style="animation:fadeUp 0.25s ease ${i*0.05}s both">
+      <div class="pl-cover" style="${p.coverUrl ? `background-image:url(${p.coverUrl})` : `background:${CLR[i%5]}`}">
+        ${p.coverUrl ? '' : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>'}
+      </div>
+      <div class="pl-info">
+        <div class="pl-name">${p.name}</div>
+        <div class="pl-cnt">${(p.songs||[]).length} TRACKS</div>
+      </div>
+    </div>
+  `).join('');
+};
+
+window.openPlModal = (edit = false) => {
+  const modal = document.getElementById('pl-modal');
+  const ttl = document.getElementById('pl-modal-ttl');
+  const nameInp = document.getElementById('pl-name-inp');
+  const delBtn = document.getElementById('pl-del-btn');
+  
+  if(edit && currentPlId) {
+    const pl = playlists.find(p => p.id === currentPlId);
+    ttl.textContent = 'Edit Playlist';
+    nameInp.value = pl.name;
+    delBtn.style.display = 'block';
+  } else {
+    ttl.textContent = 'New Playlist';
+    nameInp.value = '';
+    delBtn.style.display = 'none';
+  }
+  modal.classList.add('show');
+};
+
+window.closePlModal = () => {
+  document.getElementById('pl-modal').classList.remove('show');
+  document.getElementById('pl-cn').textContent = '';
+  document.getElementById('pl-cf').value = '';
+};
+
+window.savePlaylist = async () => {
+  const name = document.getElementById('pl-name-inp').value.trim();
+  if(!name) { showToast('Enter playlist name!', 'e'); return; }
+  
+  const btn = document.getElementById('pl-sub-btn');
+  btn.disabled = true; btn.textContent = 'Saving...';
+  const up = document.getElementById('pl-uprog');
+  const ub = document.getElementById('pl-ubar');
+  const ul = document.getElementById('pl-ulbl');
+  
+  try {
+    let cUrl = '';
+    const cf = document.getElementById('pl-cf');
+    if(cf.files[0]) {
+      up.classList.add('show');
+      cUrl = await upCloud(cf.files[0], 'image', p => {
+        ub.style.width = p + '%';
+        ul.textContent = `Uploading cover... ${p}%`;
+      });
+    }
+    
+    if(currentPlId && document.getElementById('pl-modal-ttl').textContent === 'Edit Playlist') {
+      const updateData = { name };
+      if(cUrl) updateData.coverUrl = cUrl;
+      await updateDoc(doc(db, 'playlists', currentPlId), updateData);
+      showToast('Playlist updated!', 's');
+    } else {
+      await addDoc(collection(db, 'playlists'), {
+        name,
+        coverUrl: cUrl,
+        songs: [],
+        createdAt: new Date(),
+        userId: currentUser?.uid || 'anon'
+      });
+      showToast('Playlist created!', 's');
+    }
+    closePlModal();
+  } catch(e) {
+    showToast('Error: ' + e.message, 'e');
+  }
+  up.classList.remove('show'); ub.style.width = '0%';
+  btn.disabled = false; btn.textContent = 'SAVE PLAYLIST';
+};
+
+window.deletePlaylist = async () => {
+  if(!currentPlId) return;
+  if(!confirm('Delete this playlist?')) return;
+  try {
+    await deleteDoc(doc(db, 'playlists', currentPlId));
+    showToast('Playlist deleted', 's');
+    currentPlId = null;
+    closePlModal();
+    showSc('lists');
+  } catch(e) {
+    showToast('Error', 'e');
+  }
+};
+
+window.openPlDetail = (id) => {
+  currentPlId = id;
+  renderPlDetail(id);
+  showSc('pl-detail');
+};
+
+window.renderPlDetail = (id) => {
+  const pl = playlists.find(p => p.id === id);
+  if(!pl) return;
+  
+  document.getElementById('pld-name').textContent = pl.name;
+  document.getElementById('pld-meta').textContent = `${(pl.songs||[]).length} TRACKS`;
+  const hero = document.getElementById('pld-hero');
+  if(pl.coverUrl) {
+    hero.style.backgroundImage = `url(${pl.coverUrl})`;
+  } else {
+    hero.style.backgroundImage = 'none';
+    hero.style.background = 'linear-gradient(135deg, #7C3AED, #22C55E)';
+  }
+  
+  const plSongs = songs.filter(s => (pl.songs||[]).includes(s.id));
+  const el = document.getElementById('pld-songs');
+  if(!plSongs.length) {
+    el.innerHTML = '<div class="empty">No songs in this playlist.</div>';
+  } else {
+    el.innerHTML = plSongs.map((s, i) => `
+      <div class="song-tile ${cur?.id===s.id?'is-playing':''}" onclick="playPlSong('${pl.id}', '${s.id}')">
+        <div class="cover" style="${s.coverUrl?`background-image:url(${s.coverUrl})`:`background:${CLR[i%5]}`}">
+          ${s.coverUrl?'':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>'}
+        </div>
+        <div class="sinfo">
+          <div class="stitle ${cur?.id===s.id?'pl':''}">${s.title}</div>
+          <div class="smeta">${s.artist}</div>
+        </div>
+        <button class="del-btn" onclick="event.stopPropagation();removeFromPl('${pl.id}', '${s.id}')" style="color:#ef4444;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+    `).join('');
+  }
+};
+
+window.playPlSong = (plId, songId) => {
+  const pl = playlists.find(p => p.id === plId);
+  const plSongs = songs.filter(s => (pl.songs||[]).includes(s.id));
+  // Override global songs for next/prev
+  window.currentQueue = plSongs;
+  play(songId);
+};
+
+window.playPlaylist = (shuffle = false) => {
+  const pl = playlists.find(p => p.id === currentPlId);
+  if(!pl || !(pl.songs||[]).length) return;
+  
+  let plSongs = songs.filter(s => (pl.songs||[]).includes(s.id));
+  if(shuffle) {
+    plSongs = [...plSongs].sort(() => Math.random() - 0.5);
+  }
+  window.currentQueue = plSongs;
+  play(plSongs[0].id);
+};
+
+window.removeFromPl = async (plId, songId) => {
+  try {
+    await updateDoc(doc(db, 'playlists', plId), {
+      songs: arrayRemove(songId)
+    });
+    showToast('Removed from playlist', 's');
+  } catch(e) {
+    showToast('Error', 'e');
+  }
+};
+
+window.openAtp = (songId) => {
+  atpSongId = songId;
+  const el = document.getElementById('atp-list');
+  if(!playlists.length) {
+    el.innerHTML = '<div style="text-align:center; color:var(--gray); padding:20px;">No playlists yet. Create one first!</div>';
+  } else {
+    el.innerHTML = playlists.map(p => `
+      <div class="song-tile" onclick="addToPl('${p.id}')" style="background:var(--card2); border-radius:12px; margin-bottom:4px;">
+        <div class="cover" style="${p.coverUrl ? `background-image:url(${p.coverUrl})` : `background:var(--purple)`}"></div>
+        <div class="sinfo"><div class="stitle">${p.name}</div></div>
+      </div>
+    `).join('');
+  }
+  document.getElementById('atp-ov').classList.add('show');
+};
+
+window.closeAtp = () => {
+  document.getElementById('atp-ov').classList.remove('show');
+  atpSongId = null;
+};
+
+window.addToPl = async (plId) => {
+  if(!atpSongId) return;
+  try {
+    await updateDoc(doc(db, 'playlists', plId), {
+      songs: arrayUnion(atpSongId)
+    });
+    showToast('Added to playlist!', 's');
+    closeAtp();
+  } catch(e) {
+    showToast('Error', 'e');
+  }
+};
+
+// Override next/prev to support queue
+const originalNext = window.nextS;
+window.nextS = () => {
+  const queue = window.currentQueue || songs;
+  if(!queue.length) return;
+  const i = queue.findIndex(s => s.id === cur?.id);
+  play(queue[(i + 1) % queue.length].id);
+};
+
+const originalPrev = window.prevS;
+window.prevS = () => {
+  const queue = window.currentQueue || songs;
+  if(!queue.length) return;
+  const i = queue.findIndex(s => s.id === cur?.id);
+  play(queue[(i - 1 + queue.length) % queue.length].id);
 };
 
 const upCloud=(file,type,onP)=>new Promise((res,rej)=>{
